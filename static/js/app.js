@@ -193,44 +193,50 @@ document.addEventListener('DOMContentLoaded', () => {
             noteElement.classList.add('note-item');
             noteElement.setAttribute('data-note-id', note.id);
             noteElement.innerHTML = `
-                <input type="radio" class="note-select" name="note-select" data-note-id="${note.id}">
+                <input type="checkbox" class="note-select" data-note-id="${note.id}">
                 <div class="note-content">
                     <p class="font-bold">${note.category}</p>
                     <p>${note.content}</p>
                 </div>
                 <div class="note-actions">
-                    <button class="delete-note-btn btn btn-danger" data-note-id="${note.id}">Delete</button>
+                    <button class="delete-note-btn btn" data-note-id="${note.id}">
+                        <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true">
+                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-6"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
+                        </svg>
+                    </button>
                 </div>
             `;
             notesList.appendChild(noteElement);
         });
 
         document.querySelectorAll('.note-select').forEach(selectButton => {
-            selectButton.addEventListener('click', (e) => {
+            selectButton.addEventListener('change', (e) => {
                 const noteId = e.target.getAttribute('data-note-id');
-                toggleNoteSelection(noteId);
+                toggleNoteSelection(noteId, e.target.checked);
             });
         });
 
         document.querySelectorAll('.delete-note-btn').forEach(button => {
             button.addEventListener('click', async (e) => {
-                const noteId = e.target.getAttribute('data-note-id');
+                const noteId = e.target.closest('.delete-note-btn').getAttribute('data-note-id');
                 await deleteNote(noteId);
             });
         });
     }
 
-    function toggleNoteSelection(noteId) {
+    function toggleNoteSelection(noteId, isChecked) {
         try {
-            const noteElement = document.querySelector(`.note-select[data-note-id="${noteId}"]`);
+            const noteElement = document.querySelector(`.note-item[data-note-id="${noteId}"]`);
             if (!noteElement) {
                 throw new Error(`Note element with id ${noteId} not found`);
             }
 
-            if (noteElement.checked) {
+            if (isChecked) {
                 selectedNotes.add(noteId);
+                noteElement.classList.add('selected');
             } else {
                 selectedNotes.delete(noteId);
+                noteElement.classList.remove('selected');
             }
         } catch (error) {
             console.error('Error toggling note selection:', error);
