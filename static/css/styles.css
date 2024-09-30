@@ -14,14 +14,14 @@ body {
 .chat-container {
     height: calc(100vh - 200px);
     overflow-y: auto;
-    background-color: ##0F0F0F;
+    background-color: #0F0F0F;
     color: #e0e0e0;
 }
 
 .notes-sidebar {
     height: calc(100vh - 200px);
     overflow-y: auto;
-    background-color: ##0F0F0F;
+    background-color: #0F0F0F;
     color: #e0e0e0;
 }
 
@@ -38,13 +38,16 @@ body {
 }
 
 .user-message {
-    background-color: #1D1D1D;;
+    background-color: #1D1D1D;
     color: #CBCBCB;
-    max-width: 680px
+    max-width: 680px;
+    margin-left: auto; /* Add this line to align user messages to the right */
+    text-align: right; /* Add this line to align text to the right */
 }
 
 .ai-message {
-    color: #;
+    color: #CBCBCB;
+    max-width: 680px;
 }
 
 /* Button styles */
@@ -92,7 +95,7 @@ body {
 }
 
 #notes-list {
-    background-color: ##0F0F0F;
+    background-color: #0F0F0F;
 }
 
 /* Input styles */
