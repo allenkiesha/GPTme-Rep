@@ -119,15 +119,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateNotesList() {
         notesList.innerHTML = '';
-        notes.forEach((note, index) => {
+        notes.forEach((note) => {
             const noteElement = document.createElement('div');
-            noteElement.classList.add('mb-2', 'p-2', 'bg-gray-100', 'rounded');
+            noteElement.classList.add('mb-2', 'p-2', 'bg-gray-100', 'rounded', 'flex', 'justify-between', 'items-center');
             noteElement.innerHTML = `
-                <p class="font-bold">${note.category}</p>
-                <p>${note.content}</p>
+                <div>
+                    <p class="font-bold">${note.category}</p>
+                    <p>${note.content}</p>
+                </div>
+                <button class="delete-note-btn px-2 py-1 bg-red-500 text-white rounded" data-note-id="${note.id}">Delete</button>
             `;
             notesList.appendChild(noteElement);
         });
+
+        // Add event listeners to delete buttons
+        document.querySelectorAll('.delete-note-btn').forEach(button => {
+            button.addEventListener('click', async (e) => {
+                const noteId = e.target.getAttribute('data-note-id');
+                await deleteNote(noteId);
+            });
+        });
+    }
+
+    async function deleteNote(noteId) {
+        try {
+            const response = await fetch(`/delete_note/${noteId}`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json();
+            if (data.success) {
+                notes = notes.filter(note => note.id != noteId);
+                updateNotesList();
+                updateCategoryFilter();
+            } else {
+                console.error('Error deleting note:', data.message);
+            }
+        } catch (error) {
+            console.error('Error deleting note:', error);
+        }
     }
 
     function updateCategoryFilter() {
@@ -155,14 +189,25 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         notesList.innerHTML = '';
-        filteredNotes.forEach((note, index) => {
+        filteredNotes.forEach((note) => {
             const noteElement = document.createElement('div');
-            noteElement.classList.add('mb-2', 'p-2', 'bg-gray-100', 'rounded');
+            noteElement.classList.add('mb-2', 'p-2', 'bg-gray-100', 'rounded', 'flex', 'justify-between', 'items-center');
             noteElement.innerHTML = `
-                <p class="font-bold">${note.category}</p>
-                <p>${note.content}</p>
+                <div>
+                    <p class="font-bold">${note.category}</p>
+                    <p>${note.content}</p>
+                </div>
+                <button class="delete-note-btn px-2 py-1 bg-red-500 text-white rounded" data-note-id="${note.id}">Delete</button>
             `;
             notesList.appendChild(noteElement);
+        });
+
+        // Add event listeners to delete buttons
+        document.querySelectorAll('.delete-note-btn').forEach(button => {
+            button.addEventListener('click', async (e) => {
+                const noteId = e.target.getAttribute('data-note-id');
+                await deleteNote(noteId);
+            });
         });
     }
 

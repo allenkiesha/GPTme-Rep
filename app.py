@@ -113,12 +113,12 @@ def save_note():
     new_note = Note(content=note_content, category=category, user_id=current_user.id)
     db.session.add(new_note)
     db.session.commit()
-    return jsonify({"success": True, "notes": [{"content": note.content, "category": note.category} for note in current_user.notes]})
+    return jsonify({"success": True, "notes": [{"id": note.id, "content": note.content, "category": note.category} for note in current_user.notes]})
 
 @app.route('/get_notes', methods=['GET'])
 @login_required
 def get_notes():
-    return jsonify({"notes": [{"content": note.content, "category": note.category} for note in current_user.notes]})
+    return jsonify({"notes": [{"id": note.id, "content": note.content, "category": note.category} for note in current_user.notes]})
 
 @app.route('/search_notes', methods=['GET'])
 @login_required
@@ -135,7 +135,17 @@ def search_notes():
         notes_query = notes_query.filter(or_(Note.content.ilike(f'%{query}%'), Note.category.ilike(f'%{query}%')))
     
     notes = notes_query.all()
-    return jsonify({"notes": [{"content": note.content, "category": note.category} for note in notes]})
+    return jsonify({"notes": [{"id": note.id, "content": note.content, "category": note.category} for note in notes]})
+
+@app.route('/delete_note/<int:note_id>', methods=['DELETE'])
+@login_required
+def delete_note(note_id):
+    note = Note.query.get(note_id)
+    if note and note.user_id == current_user.id:
+        db.session.delete(note)
+        db.session.commit()
+        return jsonify({"success": True, "message": "Note deleted successfully"})
+    return jsonify({"success": False, "message": "Note not found or unauthorized"}), 404
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
