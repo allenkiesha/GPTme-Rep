@@ -1,3 +1,4 @@
+
 document.addEventListener('DOMContentLoaded', () => {
     const chatForm = document.getElementById('chat-form');
     const userInput = document.getElementById('user-input');
@@ -169,7 +170,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function formatEssayContent(content) {
-        const paragraphs = content.split('\n\n');
+        const paragraphs = content.split('
+
+');
         let formattedContent = `<h2>${paragraphs[0]}</h2>`;
         for (let i = 1; i < paragraphs.length; i++) {
             formattedContent += `<p>${paragraphs[i]}</p>`;
@@ -355,7 +358,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ note_ids: Array.from(selectedNotes) }),
+                body: JSON.stringify({ note_ids: Array.from(selectedNotes), session_id: currentSessionId }),
             });
 
             if (!response.ok) {
