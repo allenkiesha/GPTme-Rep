@@ -16,8 +16,8 @@ body {
     overflow-y: auto;
     border: 1px solid #e2e8f0;
     border-radius: 0.5rem;
-    background-color: #ffffff;
-    color: #000000;
+    background-color: #1D1D1D;
+    color: #e0e0e0;
     border-right: 1px solid #1D1D1D;
 }
 
@@ -26,8 +26,8 @@ body {
     overflow-y: auto;
     border: 1px solid #e2e8f0;
     border-radius: 0.5rem;
-    background-color: #f8fafc;
-    color: #000000;
+    background-color: #1D1D1D;
+    color: #e0e0e0;
 }
 
 .chat-sessions {
@@ -43,13 +43,13 @@ body {
 }
 
 .user-message {
-    background-color: #e3f2fd;
-    color: #1e3a8a;
+    background-color: #2a4365;
+    color: #e0e0e0;
 }
 
 .ai-message {
-    background-color: #f0f9ff;
-    color: #075985;
+    background-color: #234e52;
+    color: #e0e0e0;
 }
 
 /* Button styles */
@@ -82,11 +82,11 @@ body {
 input[type="text"], select {
     width: 100%;
     padding: 0.5rem;
-    border: 1px solid #d1d5db;
+    border: 1px solid #4a5568;
     border-radius: 0.25rem;
     font-size: 1rem;
-    background-color: #ffffff;
-    color: #000000;
+    background-color: #2d3748;
+    color: #e0e0e0;
 }
 
 /* Responsive adjustments */
@@ -125,4 +125,36 @@ input[type="text"], select {
 /* Remove margins between sidebars and main chat */
 .flex.h-screen > div {
     margin: 0;
+}
+
+/* Ensure good contrast for links */
+a {
+    color: #60a5fa;
+}
+
+a:hover {
+    color: #3b82f6;
+}
+
+/* Improve readability for form labels */
+label {
+    color: #e0e0e0;
+}
+
+/* Style the scrollbar for better visibility */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #2d3748;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #4a5568;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #718096;
 }
