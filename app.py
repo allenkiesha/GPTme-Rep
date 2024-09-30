@@ -104,6 +104,7 @@ def generate_title():
     selected_model = flask_session.get('selected_model', 'gpt-4o')
     
     try:
+        app.logger.info(f"Generating title with model: {selected_model}")
         completion = openai_client.chat.completions.create(
             model=selected_model,
             messages=[
@@ -119,6 +120,7 @@ def generate_title():
             chat_session.title = title
             db.session.commit()
         
+        app.logger.info(f"Generated title: {title}")
         return jsonify({"title": title})
     except Exception as e:
         app.logger.error(f"Error generating title: {str(e)}")
