@@ -18,6 +18,7 @@ body {
     border-radius: 0.5rem;
     background-color: #ffffff;
     color: #000000;
+    border-right: 1px solid #1D1D1D;
 }
 
 .notes-sidebar {
@@ -105,6 +106,23 @@ input[type="text"], select {
 }
 
 .left-sidebar {
-    width: 250px;
+    width: 480px;
     background-color: #1A1A1A;
+}
+
+/* Login and Register box */
+.bg-white.rounded-lg.shadow-md.p-6.max-w-md.mx-auto {
+    background-color: #1D1D1D;
+    color: #ffffff;
+}
+
+/* Save Notes pop-up */
+.fixed.inset-0.bg-gray-600.bg-opacity-50.overflow-y-auto.h-full.w-full .relative.top-20.mx-auto.p-5.border.w-96.shadow-lg.rounded-md.bg-white {
+    background-color: #1D1D1D;
+    color: #ffffff;
+}
+
+/* Remove margins between sidebars and main chat */
+.flex.h-screen > div {
+    margin: 0;
 }
