@@ -1,6 +1,6 @@
 import os
 import logging
-from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
+from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -20,6 +20,13 @@ login_manager.login_view = 'login'
 # Initialize OpenAI client
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
+
+# Define AI models
+AI_MODELS = {
+    'gpt-4o': {'name': 'GPT-4 Turbo', 'description': 'Advanced language model for complex tasks'},
+    'gpt-4o-mini': {'name': 'GPT-4 Mini', 'description': 'Efficient model for simpler tasks'},
+    'claude-2': {'name': 'Claude 2', 'description': 'Alternative AI with unique capabilities'},
+}
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -54,16 +61,28 @@ def chat_page():
         app.logger.warning(f'Unauthenticated user tried to access chat page')
         return redirect(url_for('login'))
     app.logger.info(f'Rendering chat template for user {current_user.username}')
-    return render_template('chat.html')
+    return render_template('chat.html', ai_models=AI_MODELS)
+
+@app.route('/select_model', methods=['POST'])
+@login_required
+def select_model():
+    model = request.form.get('model')
+    if model in AI_MODELS:
+        session['selected_model'] = model
+        flash(f'Model changed to {AI_MODELS[model]["name"]}', 'success')
+    else:
+        flash('Invalid model selection', 'error')
+    return redirect(url_for('chat_page'))
 
 @app.route('/chat', methods=['POST'])
 @login_required
 def chat():
     user_message = request.json['message']
+    selected_model = session.get('selected_model', 'gpt-4o')
     
     try:
         completion = openai_client.chat.completions.create(
-            model="gpt-4o",
+            model=selected_model,
             messages=[{"role": "user", "content": user_message}],
             max_tokens=150
         )
@@ -128,6 +147,7 @@ def login():
         user = User.query.filter_by(username=username).first()
         if user and user.check_password(password):
             login_user(user)
+            session['selected_model'] = 'gpt-4o'  # Set default model on login
             app.logger.info(f'User {username} logged in successfully')
             flash('Logged in successfully.', 'success')
             app.logger.info(f"Redirecting to chat_page for user {username}")
