@@ -12,8 +12,8 @@
             <!-- Left Sidebar -->
             <div class="w-1/4 left-sidebar p-4 flex flex-col rounded-lg shadow-md mr-4">
                 <h2 class="text-xl font-bold mb-4 text-gray-300">Chat Sessions</h2>
-                <button id="new-chat-btn">New Chat</button>
-                <ul id="chat-sessions" class="mb-4 chat-sessions">
+                <button id="new-chat-btn" class="btn btn-primary mb-4">New Chat</button>
+                <ul id="chat-sessions" class="mb-4 chat-sessions overflow-y-auto">
                     <!-- Chat sessions will be added here dynamically -->
                 </ul>
                 
@@ -21,7 +21,7 @@
                 <div class="mt-auto pb-9">
                     <h2 class="text-xl font-bold mb-2 text-gray-300">Select AI Model</h2>
                     <form action="{{ url_for('select_model') }}" method="POST">
-                        <select name="model" class="mb-2">
+                        <select name="model" class="mb-2 w-full">
                             {% for model_id, model_info in ai_models.items() %}
                                 <option value="{{ model_id }}">{{ model_info.name }} - {{ model_info.description }}</option>
                             {% endfor %}

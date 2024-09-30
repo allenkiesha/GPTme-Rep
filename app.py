@@ -82,6 +82,27 @@ def new_session():
     flask_session['current_session'] = session_id
     return jsonify({"session_id": session_id})
 
+@app.route('/generate_title', methods=['POST'])
+@login_required
+def generate_title():
+    user_message = request.json['message']
+    selected_model = flask_session.get('selected_model', 'gpt-4o')
+    
+    try:
+        completion = openai_client.chat.completions.create(
+            model=selected_model,
+            messages=[
+                {"role": "system", "content": "Generate a short, catchy title (max 5 words) for a chat session based on the user's first message."},
+                {"role": "user", "content": user_message}
+            ],
+            max_tokens=20
+        )
+        title = completion.choices[0].message.content.strip()
+        return jsonify({"title": title})
+    except Exception as e:
+        app.logger.error(f"Error generating title: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/chat', methods=['POST'])
 @login_required
 def chat():

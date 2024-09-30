@@ -15,19 +15,39 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch('/new_session', { method: 'POST' });
             const data = await response.json();
             if (data.session_id) {
-                addSessionToSidebar(data.session_id);
-                switchChatSession(data.session_id);
+                currentSessionId = data.session_id;
+                chatContainer.innerHTML = ''; // Clear the chat container
+                userInput.value = ''; // Clear the user input
+                // We'll generate the title after the user sends the first message
             }
         } catch (error) {
             console.error('Error creating new session:', error);
         }
     }
 
-    function addSessionToSidebar(sessionId) {
+    async function generateSessionTitle(message) {
+        try {
+            const response = await fetch('/generate_title', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ message }),
+            });
+            const data = await response.json();
+            if (data.title) {
+                addSessionToSidebar(currentSessionId, data.title);
+            }
+        } catch (error) {
+            console.error('Error generating session title:', error);
+        }
+    }
+
+    function addSessionToSidebar(sessionId, title) {
         const sessionsList = document.getElementById('chat-sessions');
         const sessionItem = document.createElement('li');
-        sessionItem.textContent = `Session ${sessionId.substr(0, 8)}`;
-        sessionItem.classList.add('cursor-pointer', 'hover:bg-gray-200', 'p-2', 'rounded');
+        sessionItem.textContent = title;
+        sessionItem.classList.add('cursor-pointer', 'hover:bg-gray-200', 'p-2', 'rounded', 'truncate');
         sessionItem.setAttribute('data-session-id', sessionId);
         sessionItem.addEventListener('click', () => switchChatSession(sessionId));
         sessionsList.appendChild(sessionItem);
@@ -75,6 +95,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const data = await response.json();
                 appendMessage('assistant', data.response, true);
+
+                // Generate title if it's the first message of the session
+                const sessionsList = document.getElementById('chat-sessions');
+                if (sessionsList.children.length === 0) {
+                    await generateSessionTitle(message);
+                }
             } catch (error) {
                 console.error('Error:', error);
                 appendMessage('error', 'An error occurred. Please try again.');
