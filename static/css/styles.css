@@ -35,19 +35,20 @@ body {
     margin-bottom: 1rem;
     padding: 0.75rem;
     border-radius: 0.5rem;
+    max-width: 680px;
+    width: fit-content;
 }
 
 .user-message {
     background-color: #1D1D1D;
     color: #CBCBCB;
-    max-width: 680px;
-    margin-left: auto; /* Add this line to align user messages to the right */
-    text-align: right; /* Add this line to align text to the right */
+    margin-left: auto;
+    text-align: right;
 }
 
 .ai-message {
+    background-color: #292929;
     color: #CBCBCB;
-    max-width: 680px;
 }
 
 /* Button styles */
