@@ -117,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (sender === 'assistant') {
             if (isEssay) {
                 messageDiv.classList.add('essay-message');
-                content = formatEssayContent(content);
+                content = `<div class="essay-message-content">${formatEssayContent(content)}</div>`;
             } else {
                 messageDiv.classList.add('ai-message');
             }
@@ -253,7 +253,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 noteElement.classList.remove('selected');
             }
 
-            // Show/hide the 'Use Selected Notes' button based on selection
             if (selectedNotes.size > 0) {
                 useSelectedNotesBtn.classList.remove('hidden');
             } else {

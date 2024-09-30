@@ -67,34 +67,72 @@ body p, body .custom-dropdown, .user-message, .ai-message, .essay-message {
 }
 
 .essay-message {
-    font-size: 18px;
+    font-size: 16px;
     line-height: 1.8;
-    color: #E6E6E6;
-    background-color: #1A1A1A;
+    color: #333333;
+    background-color: #F8F8F8;
     border-radius: 8px;
-    padding: 1.5rem;
+    padding: 2rem;
     margin: 1.5rem auto;
     max-width: 800px;
     width: 100%;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    border: 1px solid transparent;
-    background-image: linear-gradient(#1A1A1A, #1A1A1A), 
-                      linear-gradient(to right, #CFAEFE, #9D79FF);
-    background-origin: border-box;
-    background-clip: content-box, border-box;
+    border: 1px solid #E0E0E0;
+    background-image: 
+        linear-gradient(90deg, #D9D9D9 1px, transparent 1px),
+        linear-gradient(#D9D9D9 1px, transparent 1px);
+    background-size: 20px 20px;
+    position: relative;
+    overflow: hidden;
+    max-height: 600px;
+}
+
+.essay-message::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+    background: linear-gradient(transparent 90%, #F8F8F8);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.essay-message-content {
+    max-height: 550px;
+    overflow-y: auto;
+    padding-right: 1rem;
 }
 
 .essay-message h2 {
     font-size: 24px;
     font-weight: 600;
     margin-bottom: 1rem;
-    color: #CFAEFE;
+    color: #333333;
     text-align: center;
 }
 
 .essay-message p {
     margin-bottom: 1rem;
     text-align: justify;
+}
+
+.essay-message-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.essay-message-content::-webkit-scrollbar-track {
+    background: #F0F0F0;
+}
+
+.essay-message-content::-webkit-scrollbar-thumb {
+    background: #CFAEFE;
+    border-radius: 4px;
+}
+
+.essay-message-content::-webkit-scrollbar-thumb:hover {
+    background: #9D79FF;
 }
 
 .btn {
