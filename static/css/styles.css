@@ -1,0 +1,11 @@
+@import 'https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css';
+
+.chat-container {
+    height: calc(100vh - 200px);
+    overflow-y: auto;
+}
+
+.notes-sidebar {
+    height: calc(100vh - 100px);
+    overflow-y: auto;
+}
