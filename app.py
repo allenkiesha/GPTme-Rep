@@ -1,9 +1,13 @@
 import os
+import logging
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from openai import OpenAI
+from urllib.parse import urlparse, urljoin
+
+logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(24)
@@ -46,6 +50,7 @@ def index():
 @app.route('/chat')
 @login_required
 def chat_page():
+    app.logger.info(f'User {current_user.username} accessed the chat page')
     return render_template('chat.html')
 
 @app.route('/chat', methods=['POST'])
@@ -66,6 +71,7 @@ def chat():
         
         return jsonify({"response": ai_response})
     except Exception as e:
+        app.logger.error(f"Error in chat: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/save_note', methods=['POST'])
@@ -98,6 +104,7 @@ def register():
         db.session.add(new_user)
         db.session.commit()
         
+        app.logger.info(f'New user registered: {username}')
         flash('Registration successful. Please log in.')
         return redirect(url_for('login'))
     
@@ -112,15 +119,21 @@ def login():
         user = User.query.filter_by(username=username).first()
         if user and user.check_password(password):
             login_user(user)
-            return redirect(url_for('chat_page'))
+            next_page = request.args.get('next')
+            if not next_page or urlparse(next_page).netloc != '':
+                next_page = url_for('chat_page')
+            app.logger.info(f'User {username} logged in successfully')
+            return redirect(next_page)
         else:
             flash('Invalid username or password')
+            app.logger.warning(f'Failed login attempt for username: {username}')
     
     return render_template('login.html')
 
 @app.route('/logout')
 @login_required
 def logout():
+    app.logger.info(f'User {current_user.username} logged out')
     logout_user()
     return redirect(url_for('index'))
 
