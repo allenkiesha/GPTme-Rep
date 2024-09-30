@@ -193,7 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
             noteElement.classList.add('note-item');
             noteElement.setAttribute('data-note-id', note.id);
             noteElement.innerHTML = `
-                <div class="note-select" data-note-id="${note.id}"></div>
+                <input type="radio" class="note-select" name="note-select" data-note-id="${note.id}">
                 <div class="note-content">
                     <p class="font-bold">${note.category}</p>
                     <p>${note.content}</p>
@@ -227,12 +227,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(`Note element with id ${noteId} not found`);
             }
 
-            if (selectedNotes.has(noteId)) {
-                selectedNotes.delete(noteId);
-                noteElement.classList.remove('selected');
-            } else {
+            if (noteElement.checked) {
                 selectedNotes.add(noteId);
-                noteElement.classList.add('selected');
+            } else {
+                selectedNotes.delete(noteId);
             }
         } catch (error) {
             console.error('Error toggling note selection:', error);

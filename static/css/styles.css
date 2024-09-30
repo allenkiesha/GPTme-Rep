@@ -243,6 +243,7 @@ label {
 }
 
 .note-select {
+    appearance: none;
     width: 1.25rem;
     height: 1.25rem;
     border: 2px solid #60a5fa;
@@ -253,7 +254,7 @@ label {
     transition: background-color 0.3s ease;
 }
 
-.note-select.selected {
+.note-select:checked {
     background-color: #60a5fa;
 }
 
