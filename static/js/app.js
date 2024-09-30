@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function displaySessionMessages(messages) {
         chatContainer.innerHTML = '';
         messages.forEach(message => {
-            appendMessage(message.role, message.content);
+            appendMessage(message.role, message.content, message.is_essay);
         });
     }
 
@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 const data = await response.json();
-                appendMessage('assistant', data.response, true);
+                appendMessage('assistant', data.response, data.is_essay, true);
 
                 const sessionsList = document.getElementById('chat-sessions');
                 if (sessionsList.children.length === 0) {
@@ -108,14 +108,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function appendMessage(sender, content, isSaveable = false) {
+    function appendMessage(sender, content, isEssay = false, isSaveable = false) {
         const messageDiv = document.createElement('div');
         messageDiv.classList.add('message', 'mb-4', 'p-3', 'rounded');
 
         if (sender === 'user') {
             messageDiv.classList.add('user-message');
         } else if (sender === 'assistant') {
-            if (content.startsWith('Here\'s a comprehensive essay') || content.includes('Essay:')) {
+            if (isEssay) {
                 messageDiv.classList.add('essay-message');
                 content = formatEssayContent(content);
             } else {
@@ -140,17 +140,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function formatEssayContent(content) {
-        // Split the content into paragraphs
         const paragraphs = content.split('\n\n');
-        
-        // Format the title
         let formattedContent = `<h2>${paragraphs[0]}</h2>`;
-        
-        // Format the rest of the paragraphs
         for (let i = 1; i < paragraphs.length; i++) {
             formattedContent += `<p>${paragraphs[i]}</p>`;
         }
-        
         return formattedContent;
     }
 
@@ -321,7 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const response = await fetch('/get_selected_notes', {
+            const response = await fetch('/generate_essay', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -335,13 +329,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const data = await response.json();
             if (data.success) {
-                const selectedNotesContent = data.notes.map(note => `${note.category}: ${note.content}`).join('\n\n');
-                userInput.value = `Selected notes:\n\n${selectedNotesContent}\n\nPlease write a comprehensive essay that explores the topics in these notes. Draw connections between the ideas presented, analyze their relationships, and expand on the concepts to provide a deeper understanding of the subject matter. Your essay should be well-structured, with clear paragraphs, and should aim to provide new insights or perspectives based on the information given.`;
+                appendMessage('assistant', data.essay, true, true);
             } else {
-                console.error('Error getting selected notes:', data.message);
+                console.error('Error generating essay:', data.message);
             }
         } catch (error) {
-            console.error('Error getting selected notes:', error);
+            console.error('Error generating essay:', error);
         }
     });
 

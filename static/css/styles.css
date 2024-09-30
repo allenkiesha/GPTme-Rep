@@ -70,10 +70,18 @@ body p, body .custom-dropdown, .user-message, .ai-message, .essay-message {
     font-size: 18px;
     line-height: 1.8;
     color: #E6E6E6;
-    background-color: #2A2A2A;
-    border-left: 4px solid #CFAEFE;
-    padding: 1rem;
-    margin-bottom: 1.5rem;
+    background-color: #1A1A1A;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 1.5rem auto;
+    max-width: 800px;
+    width: 100%;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid transparent;
+    background-image: linear-gradient(#1A1A1A, #1A1A1A), 
+                      linear-gradient(to right, #CFAEFE, #9D79FF);
+    background-origin: border-box;
+    background-clip: content-box, border-box;
 }
 
 .essay-message h2 {
@@ -81,10 +89,12 @@ body p, body .custom-dropdown, .user-message, .ai-message, .essay-message {
     font-weight: 600;
     margin-bottom: 1rem;
     color: #CFAEFE;
+    text-align: center;
 }
 
 .essay-message p {
     margin-bottom: 1rem;
+    text-align: justify;
 }
 
 .btn {
@@ -328,7 +338,6 @@ label {
     color: #C4C4C4;
 }
 
-/* Scrollbars */
 #notes-list::-webkit-scrollbar, .chat-container::-webkit-scrollbar  {
     width: 0.2em;
 }
@@ -342,5 +351,3 @@ label {
   background-color: #0A0A0A;
   outline: 1px solid #0A0A0A;
 }
-
-.chat-container 

@@ -19,11 +19,9 @@ db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
-# Initialize OpenAI client
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
 
-# Define AI models
 AI_MODELS = {
     'gpt-4o': {'name': 'GPT-4 Turbo', 'description': 'Advanced language model for complex tasks'},
     'gpt-4o-mini': {'name': 'GPT-4 Mini', 'description': 'Efficient model for simpler tasks'},
@@ -125,7 +123,7 @@ def chat():
                 {"role": "system", "content": system_messages[selected_model]},
                 {"role": "user", "content": user_message}
             ],
-            max_tokens=1000  # Increased max_tokens to accommodate longer responses
+            max_tokens=1000
         )
         ai_response = completion.choices[0].message.content
         
@@ -143,13 +141,58 @@ def chat():
         })
         flask_session['chat_history'][session_id].append({
             "role": "assistant",
-            "content": ai_response
+            "content": ai_response,
+            "is_essay": False
         })
         
-        return jsonify({"response": ai_response})
+        return jsonify({"response": ai_response, "is_essay": False})
     except Exception as e:
         app.logger.error(f"Error in chat: {str(e)}")
         return jsonify({"error": str(e)}), 500
+
+@app.route('/generate_essay', methods=['POST'])
+@login_required
+def generate_essay():
+    note_ids = request.json.get('note_ids', [])
+    selected_notes = Note.query.filter(Note.id.in_(note_ids), Note.user_id == current_user.id).all()
+    
+    if not selected_notes:
+        return jsonify({"success": False, "message": "No valid notes selected"}), 400
+
+    notes_content = "\n\n".join([f"{note.category}: {note.content}" for note in selected_notes])
+    
+    selected_model = flask_session.get('selected_model', 'gpt-4o')
+    
+    try:
+        completion = openai_client.chat.completions.create(
+            model=selected_model,
+            messages=[
+                {"role": "system", "content": "You are an expert essay writer. Create a well-structured, comprehensive essay based on the provided notes. Draw connections between ideas, analyze relationships, and provide new insights."},
+                {"role": "user", "content": f"Write an essay based on these notes:\n\n{notes_content}"}
+            ],
+            max_tokens=2000
+        )
+        essay = completion.choices[0].message.content
+        
+        if not essay:
+            raise ValueError("OpenAI returned an empty response.")
+        
+        session_id = flask_session.get('current_session')
+        if 'chat_history' not in flask_session:
+            flask_session['chat_history'] = {}
+        if session_id not in flask_session['chat_history']:
+            flask_session['chat_history'][session_id] = []
+        
+        flask_session['chat_history'][session_id].append({
+            "role": "assistant",
+            "content": essay,
+            "is_essay": True
+        })
+        
+        return jsonify({"success": True, "essay": essay})
+    except Exception as e:
+        app.logger.error(f"Error generating essay: {str(e)}")
+        return jsonify({"success": False, "message": str(e)}), 500
 
 @app.route('/get_session_messages/<session_id>', methods=['GET'])
 @login_required
@@ -247,7 +290,7 @@ def login():
         user = User.query.filter_by(username=username).first()
         if user and user.check_password(password):
             login_user(user)
-            flask_session['selected_model'] = 'gpt-4o'  # Set default model on login
+            flask_session['selected_model'] = 'gpt-4o'
             app.logger.info(f'User {username} logged in successfully')
             flash('Logged in successfully.', 'success')
             app.logger.info(f"Redirecting to chat_page for user {username}")
