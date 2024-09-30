@@ -52,6 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function generateSessionTitle(message) {
         try {
+            console.log('Generating session title for message:', message);
             const response = await fetch('/generate_title', {
                 method: 'POST',
                 headers: {
@@ -59,9 +60,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
                 body: JSON.stringify({ message, session_id: currentSessionId }),
             });
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             const data = await response.json();
+            console.log('Received title generation response:', data);
             if (data.title) {
                 await loadUserSessions();
+            } else if (data.error) {
+                console.error('Error generating title:', data.error);
             }
         } catch (error) {
             console.error('Error generating session title:', error);

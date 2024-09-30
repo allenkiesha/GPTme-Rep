@@ -103,8 +103,10 @@ def generate_title():
     session_id = request.json['session_id']
     selected_model = flask_session.get('selected_model', 'gpt-4o')
     
+    app.logger.info(f"Generating title for session {session_id} with message: {user_message}")
+    app.logger.info(f"Using model: {selected_model}")
+    
     try:
-        app.logger.info(f"Generating title with model: {selected_model}")
         completion = openai_client.chat.completions.create(
             model=selected_model,
             messages=[
@@ -115,12 +117,17 @@ def generate_title():
         )
         title = completion.choices[0].message.content.strip()
         
+        app.logger.info(f"Generated title: {title}")
+        
         chat_session = ChatSession.query.get(session_id)
         if chat_session:
             chat_session.title = title
             db.session.commit()
+            app.logger.info(f"Updated session {session_id} with title: {title}")
+        else:
+            app.logger.error(f"Chat session {session_id} not found")
+            return jsonify({"error": "Chat session not found"}), 404
         
-        app.logger.info(f"Generated title: {title}")
         return jsonify({"title": title})
     except Exception as e:
         app.logger.error(f"Error generating title: {str(e)}")
