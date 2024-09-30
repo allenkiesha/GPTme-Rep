@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('search-input');
     const categoryFilter = document.getElementById('category-filter');
     const newChatBtn = document.getElementById('new-chat-btn');
+    const useSelectedNotesBtn = document.getElementById('use-selected-notes');
 
     let notes = [];
     let currentSessionId = null;
@@ -191,15 +192,15 @@ document.addEventListener('DOMContentLoaded', () => {
         notesList.innerHTML = '';
         notes.forEach((note) => {
             const noteElement = document.createElement('div');
-            noteElement.classList.add('mb-2', 'p-2', 'flex', 'justify-between', 'items-center', 'note-item');
+            noteElement.classList.add('note-item');
             noteElement.setAttribute('data-note-id', note.id);
             noteElement.innerHTML = `
-                <div>
+                <div class="note-select" data-note-id="${note.id}"></div>
+                <div class="note-content">
                     <p class="font-bold">${note.category}</p>
                     <p>${note.content}</p>
                 </div>
-                <div>
-                    <button class="select-note-btn btn btn-primary mr-2" data-note-id="${note.id}">Select</button>
+                <div class="note-actions">
                     <button class="delete-note-btn btn btn-danger" data-note-id="${note.id}">Delete</button>
                 </div>
             `;
@@ -207,8 +208,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Add event listeners to select and delete buttons
-        document.querySelectorAll('.select-note-btn').forEach(button => {
-            button.addEventListener('click', (e) => {
+        document.querySelectorAll('.note-select').forEach(selectButton => {
+            selectButton.addEventListener('click', (e) => {
                 const noteId = e.target.getAttribute('data-note-id');
                 toggleNoteSelection(noteId);
             });
@@ -223,13 +224,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function toggleNoteSelection(noteId) {
-        const noteElement = document.querySelector(`.note-item[data-note-id="${noteId}"]`);
+        const noteElement = document.querySelector(`.note-select[data-note-id="${noteId}"]`);
         if (selectedNotes.has(noteId)) {
             selectedNotes.delete(noteId);
-            noteElement.classList.remove('bg-blue-100');
+            noteElement.classList.remove('selected');
         } else {
             selectedNotes.add(noteId);
-            noteElement.classList.add('bg-blue-100');
+            noteElement.classList.add('selected');
         }
     }
 
@@ -283,6 +284,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
         updateNotesList(filteredNotes);
     }
+
+    useSelectedNotesBtn.addEventListener('click', async () => {
+        if (selectedNotes.size === 0) {
+            alert('Please select at least one note to use.');
+            return;
+        }
+
+        try {
+            const response = await fetch('/get_selected_notes', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ note_ids: Array.from(selectedNotes) }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json();
+            if (data.success) {
+                const selectedNotesContent = data.notes.map(note => `${note.category}: ${note.content}`).join('\n\n');
+                userInput.value = `Selected notes:\n\n${selectedNotesContent}\n\nPlease summarize these notes and provide insights.`;
+            } else {
+                console.error('Error getting selected notes:', data.message);
+            }
+        } catch (error) {
+            console.error('Error getting selected notes:', error);
+        }
+    });
 
     // Fetch initial notes
     fetch('/get_notes')

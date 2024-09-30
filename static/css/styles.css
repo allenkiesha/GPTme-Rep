@@ -105,10 +105,10 @@ body {
 #notes-list div {
     border-radius: .25rem;
     background-color: #1D1D1D;
-    height: 200px;
     padding: 10px;
     overflow: hidden;
-    text-overflow: ellipse;
+    text-overflow: ellipsis;
+    margin-bottom: 0.5rem;
 }
 
 #notes-list {
@@ -231,4 +231,39 @@ label {
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
+}
+
+.note-item {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    background-color: #1D1D1D;
+    border-radius: 0.25rem;
+}
+
+.note-select {
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 2px solid #60a5fa;
+    border-radius: 50%;
+    margin-right: 0.75rem;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.note-select.selected {
+    background-color: #60a5fa;
+}
+
+.note-content {
+    flex-grow: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.note-actions {
+    display: flex;
+    gap: 0.5rem;
 }
