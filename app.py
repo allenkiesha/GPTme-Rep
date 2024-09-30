@@ -7,6 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from openai import OpenAI
 from sqlalchemy import or_
 import uuid
+from flask_migrate import Migrate
 
 logging.basicConfig(level=logging.INFO)
 
@@ -16,14 +17,13 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
-# Initialize OpenAI client
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
 
-# Define AI models
 AI_MODELS = {
     'gpt-4o': {'name': 'GPT-4 Turbo', 'description': 'Advanced language model for complex tasks'},
     'gpt-4o-mini': {'name': 'GPT-4 Mini', 'description': 'Efficient model for simpler tasks'},
@@ -165,7 +165,6 @@ def save_note():
     note_content = request.json['note']
     category = request.json.get('category', 'Uncategorized')
     
-    # Get the highest order value for the current user's notes
     highest_order = db.session.query(db.func.max(Note.order)).filter_by(user_id=current_user.id).scalar() or 0
     
     new_note = Note(content=note_content, category=category, user_id=current_user.id, order=highest_order + 1)
@@ -254,7 +253,7 @@ def login():
         user = User.query.filter_by(username=username).first()
         if user and user.check_password(password):
             login_user(user)
-            flask_session['selected_model'] = 'gpt-4o'  # Set default model on login
+            flask_session['selected_model'] = 'gpt-4o'
             app.logger.info(f'User {username} logged in successfully')
             flash('Logged in successfully.', 'success')
             app.logger.info(f"Redirecting to chat_page for user {username}")
@@ -277,9 +276,6 @@ def logout():
 def catch_all(path):
     app.logger.warning(f"Unexpected route accessed: /{path}")
     return redirect(url_for('index'))
-
-with app.app_context():
-    db.create_all()
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
