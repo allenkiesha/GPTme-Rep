@@ -14,19 +14,14 @@ body {
 .chat-container {
     height: calc(100vh - 200px);
     overflow-y: auto;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.5rem;
-    background-color: #1D1D1D;
+    background-color: ##0F0F0F;
     color: #e0e0e0;
-    border-right: 1px solid #1D1D1D;
 }
 
 .notes-sidebar {
     height: calc(100vh - 200px);
     overflow-y: auto;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.5rem;
-    background-color: #1D1D1D;
+    background-color: ##0F0F0F;
     color: #e0e0e0;
 }
 
@@ -43,49 +38,70 @@ body {
 }
 
 .user-message {
-    background-color: #2a4365;
-    color: #e0e0e0;
+    background-color: #1D1D1D;;
+    color: #CBCBCB;
+    max-width: 680px
 }
 
 .ai-message {
-    background-color: #234e52;
-    color: #e0e0e0;
+    color: #;
 }
 
 /* Button styles */
 .btn {
     padding: 0.5rem 1rem;
-    border-radius: 0.25rem;
+    border-radius: 0.2rem;
     font-weight: bold;
     transition: background-color 0.3s ease;
 }
 
 .btn-primary {
-    background-color: #3b82f6;
-    color: #ffffff;
+    background-color: #CFAEFE;
+    color: #0A0A0A;
 }
 
 .btn-primary:hover {
-    background-color: #2563eb;
+    background-color: #4F455E;
+    color: #9D79FF;
+    border: 2px solid #9D79FF;
 }
 
 .btn-danger {
-    background-color: #ef4444;
+    background-color: #343434;
     color: #ffffff;
 }
 
 .btn-danger:hover {
-    background-color: #dc2626;
+    background-color: #232323;
+}
+
+#new-chat-btn {
+    border-radius: 2rem;
+    border: 1px solid #606060;
+    padding: 10px 0;
+    margin: 0 0 30px 0;
+}
+
+#notes-list div {
+    border-radius: .25rem;
+    background-color: #1D1D1D;
+    height: 200px;
+    padding: 10px;
+    overflow: hidden;
+    text-overflow: ellipse;
+}
+
+#notes-list {
+    background-color: ##0F0F0F;
 }
 
 /* Input styles */
 input[type="text"], select {
     width: 100%;
     padding: 0.5rem;
-    border: 1px solid #4a5568;
-    border-radius: 0.25rem;
+    border-radius: 0.50rem;
     font-size: 1rem;
-    background-color: #2d3748;
+    background-color: #1D1D1D;
     color: #e0e0e0;
 }
 
@@ -107,6 +123,7 @@ input[type="text"], select {
 
 .left-sidebar {
     width: 480px;
+    max-height: 100%;
     background-color: #1A1A1A;
 }
 

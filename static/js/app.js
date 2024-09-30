@@ -164,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
         notesList.innerHTML = '';
         notes.forEach((note) => {
             const noteElement = document.createElement('div');
-            noteElement.classList.add('mb-2', 'p-2', 'bg-gray-100', 'rounded', 'flex', 'justify-between', 'items-center');
+            noteElement.classList.add('mb-2', 'p-2', 'flex', 'justify-between', 'items-center');
             noteElement.innerHTML = `
                 <div>
                     <p class="font-bold">${note.category}</p>
@@ -234,7 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
         notesList.innerHTML = '';
         filteredNotes.forEach((note) => {
             const noteElement = document.createElement('div');
-            noteElement.classList.add('mb-2', 'p-2', 'bg-gray-100', 'rounded', 'flex', 'justify-between', 'items-center');
+            noteElement.classList.add('mb-2', 'p-2', 'flex', 'justify-between', 'items-center');
             noteElement.innerHTML = `
                 <div>
                     <p class="font-bold">${note.category}</p>
