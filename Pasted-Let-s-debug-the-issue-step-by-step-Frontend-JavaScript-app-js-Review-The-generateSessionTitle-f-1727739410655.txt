@@ -1,0 +1,84 @@
+Let's debug the issue step-by-step:
+
+Frontend JavaScript (app.js) Review:
+The generateSessionTitle function is responsible for sending the message to the endpoint (/generate_title) that generates the title. Ensure that this endpoint is correctly called and handles the response properly.
+Ensure that generateSessionTitle is called after the first message in a new chat.
+Backend Endpoints:
+Ensure the backend routes (/generate_title) are correctly defined and accessible.
+Ensure the backend logic using the AI model is functioning correctly, particularly for handling title generation.
+Let's focus on verifying the JavaScript code:
+Check generateSessionTitle function:
+Ensure it is correctly formatting the request and processing the response.
+Check the call to generateSessionTitle:
+Verify it is called after the first message in a new chat.
+Step-by-Step Code Debugging:
+Add console.log statements:
+Add logging to help us identify where the issue might be.
+
+In app.js:
+
+async function generateSessionTitle(message) {
+    try {
+        console.log('Generating session title for message:', message);
+        const response = await fetch('/generate_title', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ message, session_id: currentSessionId }),
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log('Received title generation response:', data);
+        if (data.title) {
+            await loadUserSessions();  // Update session list to reflect new title
+        } else if (data.error) {
+            throw new Error(data.error);
+        }
+    } catch (error) {
+        console.error('Error generating session title:', error);
+        displayErrorMessage(`Failed to generate session title: ${error.message}`);
+    }
+}
+Verify call to generateSessionTitle after the first message:
+Check within the form submission handler:
+
+chatForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const message = userInput.value.trim();
+    if (!message) return;
+    appendMessage('user', message);
+    userInput.value = '';
+    try {
+        const response = await fetch('/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ message, session_id: currentSessionId }),
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        appendMessage('assistant', data.response, data.is_essay, true);
+        // Generate title conditionally when the session has only one message.
+        if (chatSessionsList.children.length === 1) {
+            await generateSessionTitle(message);
+            console.log('Title generation triggered.');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        appendMessage('error', 'An error occurred. Please try again.');
+    }
+});
+Step 2: Backend Verification
+Ensure the endpoint /generate_title receives and processes the requests correctly.
+
+Sample backend endpoint in Python and Flask:
+
+import replit.ai
+from replit.ai.modelfarm.google.preview.language_models import ChatModel
+@app.route('/generate_title', methods=['

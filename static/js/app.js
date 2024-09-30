@@ -134,6 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (chatSessionsList.children.length === 1) {
                     await generateSessionTitle(message);
+                    console.log('Title generation triggered.');
                 }
             } catch (error) {
                 console.error('Error:', error);

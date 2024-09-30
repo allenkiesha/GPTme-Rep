@@ -60,7 +60,7 @@ class ChatMessage(db.Model):
     content = db.Column(db.Text, nullable=False)
     is_essay = db.Column(db.Boolean, default=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-    chat_session_id = db.Column(db.String(36), db.ForeignKey('chat_session.id'), nullable=False)
+    chat_session_id = db.Column(db.String(36), db.ForeignKey('chat_session.id', ondelete='CASCADE'), nullable=False)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -166,8 +166,8 @@ def chat():
         if not ai_response:
             raise ValueError("OpenAI returned an empty response.")
         
-        user_message_db = ChatMessage(role="user", content=user_message, chat_session_id=session_id)
-        ai_message_db = ChatMessage(role="assistant", content=ai_response, chat_session_id=session_id)
+        user_message_db = ChatMessage(role="user", content=user_message, chat_session=chat_session)
+        ai_message_db = ChatMessage(role="assistant", content=ai_response, chat_session=chat_session)
         db.session.add(user_message_db)
         db.session.add(ai_message_db)
         db.session.commit()
