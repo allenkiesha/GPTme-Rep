@@ -5,7 +5,6 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from openai import OpenAI
-from urllib.parse import urlparse
 
 logging.basicConfig(level=logging.INFO)
 
@@ -50,6 +49,9 @@ def index():
 @app.route('/chat')
 @login_required
 def chat_page():
+    if not current_user.is_authenticated:
+        app.logger.warning(f'Unauthenticated user tried to access chat page')
+        return redirect(url_for('login'))
     app.logger.info(f'User {current_user.username} accessed the chat page')
     return render_template('chat.html')
 
@@ -123,12 +125,9 @@ def login():
         user = User.query.filter_by(username=username).first()
         if user and user.check_password(password):
             login_user(user)
-            next_page = request.args.get('next')
-            if not next_page or urlparse(next_page).netloc != '':
-                next_page = url_for('chat_page')
             app.logger.info(f'User {username} logged in successfully')
             flash('Logged in successfully.', 'success')
-            return redirect(next_page)
+            return redirect(url_for('chat_page'))
         else:
             flash('Invalid username or password', 'error')
             app.logger.warning(f'Failed login attempt for username: {username}')
