@@ -115,12 +115,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (sender === 'user') {
             messageDiv.classList.add('user-message');
         } else if (sender === 'assistant') {
-            messageDiv.classList.add('ai-message');
+            if (content.startsWith('Here\'s a comprehensive essay') || content.includes('Essay:')) {
+                messageDiv.classList.add('essay-message');
+                content = formatEssayContent(content);
+            } else {
+                messageDiv.classList.add('ai-message');
+            }
         } else {
             messageDiv.classList.add('bg-red-100', 'text-red-800');
         }
 
-        messageDiv.textContent = content;
+        messageDiv.innerHTML = content;
 
         if (isSaveable) {
             const saveButton = document.createElement('button');
@@ -132,6 +137,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         chatContainer.appendChild(messageDiv);
         chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function formatEssayContent(content) {
+        // Split the content into paragraphs
+        const paragraphs = content.split('\n\n');
+        
+        // Format the title
+        let formattedContent = `<h2>${paragraphs[0]}</h2>`;
+        
+        // Format the rest of the paragraphs
+        for (let i = 1; i < paragraphs.length; i++) {
+            formattedContent += `<p>${paragraphs[i]}</p>`;
+        }
+        
+        return formattedContent;
     }
 
     function showSaveNoteModal(content) {

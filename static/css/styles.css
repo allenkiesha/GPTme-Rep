@@ -11,7 +11,7 @@ body {
     background-position: -19px -19px;
 }
 
-body p, body .custom-dropdown, .user-message, .ai-message {
+body p, body .custom-dropdown, .user-message, .ai-message, .essay-message {
     font-size: 14px;
     font-family: "Work Sans", system-ui;
     font-optical-sizing: auto;
@@ -64,6 +64,27 @@ body p, body .custom-dropdown, .user-message, .ai-message {
     font-size: 18px;
     line-height: 1.8;
     color: #CBCBCB;
+}
+
+.essay-message {
+    font-size: 18px;
+    line-height: 1.8;
+    color: #E6E6E6;
+    background-color: #2A2A2A;
+    border-left: 4px solid #CFAEFE;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.essay-message h2 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #CFAEFE;
+}
+
+.essay-message p {
+    margin-bottom: 1rem;
 }
 
 .btn {
