@@ -200,6 +200,16 @@ def delete_note(note_id):
         return jsonify({"success": True, "message": "Note deleted successfully"})
     return jsonify({"success": False, "message": "Note not found or unauthorized"}), 404
 
+@app.route('/get_selected_notes', methods=['POST'])
+@login_required
+def get_selected_notes():
+    note_ids = request.json.get('note_ids', [])
+    selected_notes = Note.query.filter(Note.id.in_(note_ids), Note.user_id == current_user.id).all()
+    return jsonify({
+        "success": True,
+        "notes": [{"id": note.id, "content": note.content, "category": note.category} for note in selected_notes]
+    })
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:

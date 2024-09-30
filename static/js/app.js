@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let notes = [];
     let currentSessionId = null;
+    let selectedNotes = new Set();
 
     async function createNewSession() {
         try {
@@ -190,24 +191,46 @@ document.addEventListener('DOMContentLoaded', () => {
         notesList.innerHTML = '';
         notes.forEach((note) => {
             const noteElement = document.createElement('div');
-            noteElement.classList.add('mb-2', 'p-2', 'flex', 'justify-between', 'items-center');
+            noteElement.classList.add('mb-2', 'p-2', 'flex', 'justify-between', 'items-center', 'note-item');
+            noteElement.setAttribute('data-note-id', note.id);
             noteElement.innerHTML = `
                 <div>
                     <p class="font-bold">${note.category}</p>
                     <p>${note.content}</p>
                 </div>
-                <button class="delete-note-btn btn btn-danger" data-note-id="${note.id}">Delete</button>
+                <div>
+                    <button class="select-note-btn btn btn-primary mr-2" data-note-id="${note.id}">Select</button>
+                    <button class="delete-note-btn btn btn-danger" data-note-id="${note.id}">Delete</button>
+                </div>
             `;
             notesList.appendChild(noteElement);
         });
 
-        // Add event listeners to delete buttons
+        // Add event listeners to select and delete buttons
+        document.querySelectorAll('.select-note-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const noteId = e.target.getAttribute('data-note-id');
+                toggleNoteSelection(noteId);
+            });
+        });
+
         document.querySelectorAll('.delete-note-btn').forEach(button => {
             button.addEventListener('click', async (e) => {
                 const noteId = e.target.getAttribute('data-note-id');
                 await deleteNote(noteId);
             });
         });
+    }
+
+    function toggleNoteSelection(noteId) {
+        const noteElement = document.querySelector(`.note-item[data-note-id="${noteId}"]`);
+        if (selectedNotes.has(noteId)) {
+            selectedNotes.delete(noteId);
+            noteElement.classList.remove('bg-blue-100');
+        } else {
+            selectedNotes.add(noteId);
+            noteElement.classList.add('bg-blue-100');
+        }
     }
 
     async function deleteNote(noteId) {
@@ -223,6 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             if (data.success) {
                 notes = notes.filter(note => note.id != noteId);
+                selectedNotes.delete(noteId);
                 updateNotesList();
                 updateCategoryFilter();
             } else {
@@ -257,27 +281,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return matchesSearch && matchesCategory;
         });
 
-        notesList.innerHTML = '';
-        filteredNotes.forEach((note) => {
-            const noteElement = document.createElement('div');
-            noteElement.classList.add('mb-2', 'p-2', 'flex', 'justify-between', 'items-center');
-            noteElement.innerHTML = `
-                <div>
-                    <p class="font-bold">${note.category}</p>
-                    <p>${note.content}</p>
-                </div>
-                <button class="delete-note-btn btn btn-danger" data-note-id="${note.id}">Delete</button>
-            `;
-            notesList.appendChild(noteElement);
-        });
-
-        // Add event listeners to delete buttons
-        document.querySelectorAll('.delete-note-btn').forEach(button => {
-            button.addEventListener('click', async (e) => {
-                const noteId = e.target.getAttribute('data-note-id');
-                await deleteNote(noteId);
-            });
-        });
+        updateNotesList(filteredNotes);
     }
 
     // Fetch initial notes
