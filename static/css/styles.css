@@ -30,7 +30,6 @@ body {
     overflow-y: auto;
 }
 
-/* Message styles */
 .message {
     margin-bottom: 1rem;
     padding: 0.75rem;
@@ -51,7 +50,6 @@ body {
     color: #CBCBCB;
 }
 
-/* Button styles */
 .btn {
     padding: 0.5rem 1rem;
     border-radius: 0.2rem;
@@ -107,7 +105,6 @@ body {
     background-color: #0F0F0F;
 }
 
-/* Input styles */
 input[type="text"], select {
     width: 100%;
     padding: 0.5rem;
@@ -124,7 +121,6 @@ input[type="text"]:focus, select:focus {
     border-color: #60a5fa;
 }
 
-/* Responsive adjustments */
 @media (max-width: 1024px) {
     .flex.h-screen {
         flex-direction: column;
@@ -134,7 +130,6 @@ input[type="text"]:focus, select:focus {
     }
 }
 
-/* New styles */
 .page-title {
     text-align: center;
     color: #ffffff;
@@ -146,24 +141,20 @@ input[type="text"]:focus, select:focus {
     background-color: #1A1A1A;
 }
 
-/* Login and Register box */
 .bg-white.rounded-lg.shadow-md.p-6.max-w-md.mx-auto {
     background-color: #1D1D1D;
     color: #ffffff;
 }
 
-/* Save Notes pop-up */
 .fixed.inset-0.bg-gray-600.bg-opacity-50.overflow-y-auto.h-full.w-full .relative.top-20.mx-auto.p-5.border.w-96.shadow-lg.rounded-md.bg-white {
     background-color: #1D1D1D;
     color: #ffffff;
 }
 
-/* Remove margins between sidebars and main chat */
 .flex.h-screen > div {
     margin: 0;
 }
 
-/* Ensure good contrast for links */
 a {
     color: #60a5fa;
 }
@@ -172,12 +163,10 @@ a:hover {
     color: #3b82f6;
 }
 
-/* Improve readability for form labels */
 label {
     color: #e0e0e0;
 }
 
-/* Style the scrollbar for better visibility */
 ::-webkit-scrollbar {
     width: 8px;
 }
@@ -195,11 +184,30 @@ label {
     background: #718096;
 }
 
-/* Custom dropdown styles */
 .custom-dropdown {
-    @apply bg-gray-800 text-white border border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+    background-color: #343434;
+    color: #ffffff;
+    border: 1px solid #4a4a4a;
+    border-radius: 0.25rem;
+    padding: 0.5rem;
+    width: 100%;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23ffffff' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 12px;
+}
+
+.custom-dropdown:focus {
+    outline: none;
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
 }
 
 .custom-dropdown option {
-    @apply bg-gray-800 text-white;
+    background-color: #343434;
+    color: #ffffff;
+    padding: 0.5rem;
 }
