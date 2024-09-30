@@ -2,7 +2,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatForm = document.getElementById('chat-form');
     const userInput = document.getElementById('user-input');
     const chatContainer = document.querySelector('.chat-container');
-    const notesSidebar = document.querySelector('.notes-sidebar');
+    const notesList = document.getElementById('notes-list');
+    const searchInput = document.getElementById('search-input');
+    const categoryFilter = document.getElementById('category-filter');
+
+    let notes = [];
 
     if (chatForm) {
         chatForm.addEventListener('submit', async (e) => {
@@ -53,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const saveButton = document.createElement('button');
             saveButton.textContent = 'Save to Notes';
             saveButton.classList.add('ml-2', 'px-2', 'py-1', 'bg-yellow-500', 'text-white', 'rounded');
-            saveButton.addEventListener('click', () => saveNote(content));
+            saveButton.addEventListener('click', () => showSaveNoteModal(content));
             messageDiv.appendChild(saveButton);
         }
 
@@ -61,14 +65,43 @@ document.addEventListener('DOMContentLoaded', () => {
         chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
-    async function saveNote(content) {
+    function showSaveNoteModal(content) {
+        const modal = document.createElement('div');
+        modal.classList.add('fixed', 'inset-0', 'bg-gray-600', 'bg-opacity-50', 'overflow-y-auto', 'h-full', 'w-full');
+        modal.innerHTML = `
+            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                <h3 class="text-lg font-bold mb-4">Save Note</h3>
+                <textarea id="note-content" class="w-full p-2 border rounded mb-4" rows="4">${content}</textarea>
+                <input type="text" id="note-category" class="w-full p-2 border rounded mb-4" placeholder="Category">
+                <div class="flex justify-end">
+                    <button id="cancel-save" class="px-4 py-2 bg-gray-300 text-black rounded mr-2">Cancel</button>
+                    <button id="confirm-save" class="px-4 py-2 bg-blue-500 text-white rounded">Save</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        document.getElementById('cancel-save').addEventListener('click', () => {
+            document.body.removeChild(modal);
+        });
+
+        document.getElementById('confirm-save').addEventListener('click', () => {
+            const noteContent = document.getElementById('note-content').value;
+            const noteCategory = document.getElementById('note-category').value || 'Uncategorized';
+            saveNote(noteContent, noteCategory);
+            document.body.removeChild(modal);
+        });
+    }
+
+    async function saveNote(content, category) {
         try {
             const response = await fetch('/save_note', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ note: content }),
+                body: JSON.stringify({ note: content, category: category }),
             });
 
             if (!response.ok) {
@@ -76,27 +109,70 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const data = await response.json();
-            updateNotesSidebar(data.notes);
+            notes = data.notes;
+            updateNotesList();
+            updateCategoryFilter();
         } catch (error) {
             console.error('Error saving note:', error);
         }
     }
 
-    function updateNotesSidebar(notes) {
-        notesSidebar.innerHTML = '<h2 class="text-xl font-bold mb-4">Notes</h2>';
+    function updateNotesList() {
+        notesList.innerHTML = '';
         notes.forEach((note, index) => {
             const noteElement = document.createElement('div');
             noteElement.classList.add('mb-2', 'p-2', 'bg-gray-100', 'rounded');
-            noteElement.textContent = `${index + 1}. ${note}`;
-            notesSidebar.appendChild(noteElement);
+            noteElement.innerHTML = `
+                <p class="font-bold">${note.category}</p>
+                <p>${note.content}</p>
+            `;
+            notesList.appendChild(noteElement);
+        });
+    }
+
+    function updateCategoryFilter() {
+        const categories = new Set(notes.map(note => note.category));
+        categoryFilter.innerHTML = '<option value="">All Categories</option>';
+        categories.forEach(category => {
+            const option = document.createElement('option');
+            option.value = category;
+            option.textContent = category;
+            categoryFilter.appendChild(option);
+        });
+    }
+
+    searchInput.addEventListener('input', filterNotes);
+    categoryFilter.addEventListener('change', filterNotes);
+
+    function filterNotes() {
+        const searchQuery = searchInput.value.toLowerCase();
+        const selectedCategory = categoryFilter.value;
+
+        const filteredNotes = notes.filter(note => {
+            const matchesSearch = note.content.toLowerCase().includes(searchQuery) || note.category.toLowerCase().includes(searchQuery);
+            const matchesCategory = !selectedCategory || note.category === selectedCategory;
+            return matchesSearch && matchesCategory;
+        });
+
+        notesList.innerHTML = '';
+        filteredNotes.forEach((note, index) => {
+            const noteElement = document.createElement('div');
+            noteElement.classList.add('mb-2', 'p-2', 'bg-gray-100', 'rounded');
+            noteElement.innerHTML = `
+                <p class="font-bold">${note.category}</p>
+                <p>${note.content}</p>
+            `;
+            notesList.appendChild(noteElement);
         });
     }
 
     // Fetch initial notes
-    if (notesSidebar) {
-        fetch('/get_notes')
-            .then(response => response.json())
-            .then(data => updateNotesSidebar(data.notes))
-            .catch(error => console.error('Error fetching notes:', error));
-    }
+    fetch('/get_notes')
+        .then(response => response.json())
+        .then(data => {
+            notes = data.notes;
+            updateNotesList();
+            updateCategoryFilter();
+        })
+        .catch(error => console.error('Error fetching notes:', error));
 });

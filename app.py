@@ -5,6 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from openai import OpenAI
+from sqlalchemy import or_
 
 logging.basicConfig(level=logging.INFO)
 
@@ -42,6 +43,7 @@ class User(UserMixin, db.Model):
 class Note(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
+    category = db.Column(db.String(50), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 @login_manager.user_loader
@@ -107,15 +109,33 @@ def chat():
 @login_required
 def save_note():
     note_content = request.json['note']
-    new_note = Note(content=note_content, user_id=current_user.id)
+    category = request.json.get('category', 'Uncategorized')
+    new_note = Note(content=note_content, category=category, user_id=current_user.id)
     db.session.add(new_note)
     db.session.commit()
-    return jsonify({"success": True, "notes": [note.content for note in current_user.notes]})
+    return jsonify({"success": True, "notes": [{"content": note.content, "category": note.category} for note in current_user.notes]})
 
 @app.route('/get_notes', methods=['GET'])
 @login_required
 def get_notes():
-    return jsonify({"notes": [note.content for note in current_user.notes]})
+    return jsonify({"notes": [{"content": note.content, "category": note.category} for note in current_user.notes]})
+
+@app.route('/search_notes', methods=['GET'])
+@login_required
+def search_notes():
+    query = request.args.get('query', '')
+    category = request.args.get('category', '')
+    
+    notes_query = Note.query.filter_by(user_id=current_user.id)
+    
+    if category:
+        notes_query = notes_query.filter_by(category=category)
+    
+    if query:
+        notes_query = notes_query.filter(or_(Note.content.ilike(f'%{query}%'), Note.category.ilike(f'%{query}%')))
+    
+    notes = notes_query.all()
+    return jsonify({"notes": [{"content": note.content, "category": note.category} for note in notes]})
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():

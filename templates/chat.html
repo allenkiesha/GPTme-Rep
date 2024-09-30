@@ -46,7 +46,18 @@
                 </form>
             </div>
             <div class="w-1/4">
-                <div class="bg-white rounded-lg shadow-md p-4 notes-sidebar"></div>
+                <div class="bg-white rounded-lg shadow-md p-4 notes-sidebar">
+                    <h2 class="text-xl font-bold mb-2">Notes</h2>
+                    <div class="mb-4">
+                        <input type="text" id="search-input" class="w-full p-2 border rounded" placeholder="Search notes...">
+                    </div>
+                    <div class="mb-4">
+                        <select id="category-filter" class="w-full p-2 border rounded">
+                            <option value="">All Categories</option>
+                        </select>
+                    </div>
+                    <div id="notes-list"></div>
+                </div>
             </div>
         </div>
     </div>
