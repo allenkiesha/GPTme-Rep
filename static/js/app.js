@@ -221,13 +221,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function toggleNoteSelection(noteId) {
-        const noteElement = document.querySelector(`.note-select[data-note-id="${noteId}"]`);
-        if (selectedNotes.has(noteId)) {
-            selectedNotes.delete(noteId);
-            noteElement.classList.remove('selected');
-        } else {
-            selectedNotes.add(noteId);
-            noteElement.classList.add('selected');
+        try {
+            const noteElement = document.querySelector(`.note-select[data-note-id="${noteId}"]`);
+            if (!noteElement) {
+                throw new Error(`Note element with id ${noteId} not found`);
+            }
+
+            if (selectedNotes.has(noteId)) {
+                selectedNotes.delete(noteId);
+                noteElement.classList.remove('selected');
+            } else {
+                selectedNotes.add(noteId);
+                noteElement.classList.add('selected');
+            }
+        } catch (error) {
+            console.error('Error toggling note selection:', error);
         }
     }
 
