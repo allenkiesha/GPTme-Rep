@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const categoryFilter = document.getElementById('category-filter');
     const newChatBtn = document.getElementById('new-chat-btn');
     const useSelectedNotesBtn = document.getElementById('use-selected-notes');
+    const chatSessions = document.getElementById('chat-sessions');
 
     let notes = [];
     let currentSessionId = null;
@@ -20,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentSessionId = data.session_id;
                 chatContainer.innerHTML = '';
                 userInput.value = '';
+                addSessionToSidebar(currentSessionId, 'Untitled Chat');
             }
         } catch (error) {
             console.error('Error creating new session:', error);
@@ -33,11 +35,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ message }),
+                body: JSON.stringify({ message, session_id: currentSessionId }),
             });
             const data = await response.json();
             if (data.title) {
-                addSessionToSidebar(currentSessionId, data.title);
+                updateSessionTitle(currentSessionId, data.title);
             }
         } catch (error) {
             console.error('Error generating session title:', error);
@@ -45,13 +47,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function addSessionToSidebar(sessionId, title) {
-        const sessionsList = document.getElementById('chat-sessions');
         const sessionItem = document.createElement('li');
         sessionItem.textContent = title;
         sessionItem.classList.add('cursor-pointer', 'hover:bg-gray-200', 'p-2', 'rounded', 'truncate');
         sessionItem.setAttribute('data-session-id', sessionId);
         sessionItem.addEventListener('click', () => switchChatSession(sessionId));
-        sessionsList.appendChild(sessionItem);
+        chatSessions.appendChild(sessionItem);
+    }
+
+    function updateSessionTitle(sessionId, title) {
+        const sessionItem = chatSessions.querySelector(`[data-session-id="${sessionId}"]`);
+        if (sessionItem) {
+            sessionItem.textContent = title;
+        }
     }
 
     async function switchChatSession(sessionId) {
@@ -97,8 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await response.json();
                 appendMessage('assistant', data.response, data.is_essay, true);
 
-                const sessionsList = document.getElementById('chat-sessions');
-                if (sessionsList.children.length === 0) {
+                if (!currentSessionId) {
                     await generateSessionTitle(message);
                 }
             } catch (error) {
@@ -415,5 +422,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    createNewSession();
+    // Load existing chat sessions
+    chatSessions.querySelectorAll('li').forEach(sessionItem => {
+        sessionItem.addEventListener('click', () => switchChatSession(sessionItem.getAttribute('data-session-id')));
+    });
+
+    // Create a new session on page load if there are no existing sessions
+    if (chatSessions.children.length === 0) {
+        createNewSession();
+    } else {
+        // Load the most recent session
+        const mostRecentSession = chatSessions.children[0];
+        switchChatSession(mostRecentSession.getAttribute('data-session-id'));
+    }
 });
