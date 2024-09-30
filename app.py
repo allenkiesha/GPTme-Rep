@@ -5,7 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from openai import OpenAI
-from sqlalchemy import or_
+from sqlalchemy import or_, Column, Integer
 import uuid
 
 logging.basicConfig(level=logging.INFO)
@@ -47,7 +47,7 @@ class Note(db.Model):
     content = db.Column(db.Text, nullable=False)
     category = db.Column(db.String(50), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    order = db.Column(db.Integer, nullable=False, default=0)
+    order = Column(Integer, nullable=True)  # Make order nullable
 
 class Article(db.Model):
     id = db.Column(db.Integer, primary_key=True)
