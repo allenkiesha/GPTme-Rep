@@ -49,11 +49,11 @@ def index():
 @app.route('/chat')
 @login_required
 def chat_page():
-    print(f"Debug: Accessed chat_page for user {current_user.username}")  # Add this line for debugging
+    app.logger.info(f"Chat page accessed by user {current_user.username}")
     if not current_user.is_authenticated:
         app.logger.warning(f'Unauthenticated user tried to access chat page')
         return redirect(url_for('login'))
-    app.logger.info(f'User {current_user.username} accessed the chat page')
+    app.logger.info(f'Rendering chat template for user {current_user.username}')
     return render_template('chat.html')
 
 @app.route('/chat', methods=['POST'])
@@ -117,7 +117,9 @@ def register():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    app.logger.info("Login route accessed")
     if current_user.is_authenticated:
+        app.logger.info(f"User {current_user.username} already authenticated, redirecting to chat_page")
         return redirect(url_for('chat_page'))
     if request.method == 'POST':
         username = request.form.get('username')
@@ -128,12 +130,13 @@ def login():
             login_user(user)
             app.logger.info(f'User {username} logged in successfully')
             flash('Logged in successfully.', 'success')
-            print(f"Debug: Redirecting to chat_page for user {username}")  # Add this line for debugging
+            app.logger.info(f"Redirecting to chat_page for user {username}")
             return redirect(url_for('chat_page'))
         else:
             flash('Invalid username or password', 'error')
             app.logger.warning(f'Failed login attempt for username: {username}')
     
+    app.logger.info("Rendering login template")
     return render_template('login.html')
 
 @app.route('/logout')
@@ -141,6 +144,11 @@ def login():
 def logout():
     app.logger.info(f'User {current_user.username} logged out')
     logout_user()
+    return redirect(url_for('index'))
+
+@app.route('/<path:path>')
+def catch_all(path):
+    app.logger.warning(f"Unexpected route accessed: /{path}")
     return redirect(url_for('index'))
 
 with app.app_context():
