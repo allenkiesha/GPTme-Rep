@@ -2,7 +2,8 @@
 
 body {
     font-family: 'Arial', sans-serif;
-    background-color: #f0f2f5;
+    background-color: #0A0A0A;
+    color: #ffffff;
 }
 
 .container {
@@ -16,6 +17,7 @@ body {
     border: 1px solid #e2e8f0;
     border-radius: 0.5rem;
     background-color: #ffffff;
+    color: #000000;
 }
 
 .notes-sidebar {
@@ -24,6 +26,7 @@ body {
     border: 1px solid #e2e8f0;
     border-radius: 0.5rem;
     background-color: #f8fafc;
+    color: #000000;
 }
 
 .chat-sessions {
@@ -81,6 +84,8 @@ input[type="text"], select {
     border: 1px solid #d1d5db;
     border-radius: 0.25rem;
     font-size: 1rem;
+    background-color: #ffffff;
+    color: #000000;
 }
 
 /* Responsive adjustments */
@@ -91,4 +96,15 @@ input[type="text"], select {
     .w-1/4, .flex-1 {
         width: 100%;
     }
+}
+
+/* New styles */
+.page-title {
+    text-align: center;
+    color: #ffffff;
+}
+
+.left-sidebar {
+    max-width: 580px;
+    background-color: #1D1D1D;
 }
