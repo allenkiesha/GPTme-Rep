@@ -1,53 +1,30 @@
-import os
-import logging
-from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, session as flask_session
+from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from openai import OpenAI
-from sqlalchemy import or_, Column, Integer
-import uuid
-
-logging.basicConfig(level=logging.INFO)
+import os
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.urandom(24)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///chat.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
-# Initialize OpenAI client
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-openai_client = OpenAI(api_key=OPENAI_API_KEY)
-
-# Define AI models
-AI_MODELS = {
-    'gpt-4o': {'name': 'GPT-4 Turbo', 'description': 'Advanced language model for complex tasks'},
-    'gpt-4o-mini': {'name': 'GPT-4 Mini', 'description': 'Efficient model for simpler tasks'},
-}
-
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password_hash = db.Column(db.String(120), nullable=False)
-    notes = db.relationship('Note', backref='user', lazy=True)
-    articles = db.relationship('Article', backref='user', lazy=True)
-
-    def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
-
-    def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
+    notes = db.relationship('Note', backref='author', lazy=True)
 
 class Note(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
     category = db.Column(db.String(50), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    order = Column(Integer, nullable=True)  # Make order nullable
+    order = db.Column(db.Integer, nullable=False, default=0)
 
 class Article(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -61,283 +38,136 @@ def load_user(user_id):
 
 @app.route('/')
 def index():
-    return redirect(url_for('chat_page'))
-
-@app.route('/chat')
-@login_required
-def chat_page():
-    app.logger.info(f"Chat page accessed by user {current_user.username}")
-    return render_template('chat.html', ai_models=AI_MODELS)
-
-@app.route('/select_model', methods=['POST'])
-@login_required
-def select_model():
-    model = request.form.get('model')
-    if model in AI_MODELS:
-        flask_session['selected_model'] = model
-        flash(f'Model changed to {AI_MODELS[model]["name"]}', 'success')
-    else:
-        flash('Invalid model selection', 'error')
-    return jsonify({"success": True})
-
-@app.route('/new_session', methods=['POST'])
-@login_required
-def new_session():
-    session_id = str(uuid.uuid4())
-    if 'chat_sessions' not in flask_session:
-        flask_session['chat_sessions'] = []
-    flask_session['chat_sessions'].append(session_id)
-    flask_session['current_session'] = session_id
-    return jsonify({"session_id": session_id})
-
-@app.route('/generate_title', methods=['POST'])
-@login_required
-def generate_title():
-    user_message = request.json['message']
-    selected_model = flask_session.get('selected_model', 'gpt-4o')
-    
-    try:
-        completion = openai_client.chat.completions.create(
-            model=selected_model,
-            messages=[
-                {"role": "system", "content": "Generate a short, catchy title (max 5 words) for a chat session based on the user's first message."},
-                {"role": "user", "content": user_message}
-            ],
-            max_tokens=20
-        )
-        title = completion.choices[0].message.content.strip()
-        return jsonify({"title": title})
-    except Exception as e:
-        app.logger.error(f"Error generating title: {str(e)}")
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/chat', methods=['POST'])
-@login_required
-def chat():
-    user_message = request.json['message']
-    session_id = flask_session.get('current_session')
-    if not session_id:
-        return jsonify({"error": "No active session"}), 400
-
-    selected_model = flask_session.get('selected_model', 'gpt-4o')
-    
-    system_messages = {
-        'gpt-4o': "You are a formal and detailed AI assistant. Provide comprehensive and well-structured responses.",
-        'gpt-4o-mini': "You are a casual and concise AI assistant. Provide brief and friendly responses."
-    }
-    
-    try:
-        completion = openai_client.chat.completions.create(
-            model=selected_model,
-            messages=[
-                {"role": "system", "content": system_messages[selected_model]},
-                {"role": "user", "content": user_message}
-            ],
-            max_tokens=150
-        )
-        ai_response = completion.choices[0].message.content
-        
-        if not ai_response:
-            raise ValueError("OpenAI returned an empty response.")
-        
-        if 'chat_history' not in flask_session:
-            flask_session['chat_history'] = {}
-        if session_id not in flask_session['chat_history']:
-            flask_session['chat_history'][session_id] = []
-        
-        flask_session['chat_history'][session_id].append({
-            "role": "user",
-            "content": user_message
-        })
-        flask_session['chat_history'][session_id].append({
-            "role": "assistant",
-            "content": ai_response
-        })
-        
-        return jsonify({"response": ai_response})
-    except Exception as e:
-        app.logger.error(f"Error in chat: {str(e)}")
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/get_session_messages/<session_id>', methods=['GET'])
-@login_required
-def get_session_messages(session_id):
-    chat_history = flask_session.get('chat_history', {})
-    session_messages = chat_history.get(session_id, [])
-    return jsonify({"messages": session_messages})
-
-@app.route('/save_note', methods=['POST'])
-@login_required
-def save_note():
-    note_content = request.json['note']
-    category = request.json.get('category', 'Uncategorized')
-    new_note = Note(content=note_content, category=category, user_id=current_user.id)
-    db.session.add(new_note)
-    db.session.commit()
-    return jsonify({"success": True, "notes": [{"id": note.id, "content": note.content, "category": note.category} for note in current_user.notes]})
-
-@app.route('/get_notes', methods=['GET'])
-@login_required
-def get_notes():
-    return jsonify({"notes": [{"id": note.id, "content": note.content, "category": note.category} for note in current_user.notes]})
-
-@app.route('/search_notes', methods=['GET'])
-@login_required
-def search_notes():
-    query = request.args.get('query', '')
-    category = request.args.get('category', '')
-    
-    notes_query = Note.query.filter_by(user_id=current_user.id)
-    
-    if category:
-        notes_query = notes_query.filter_by(category=category)
-    
-    if query:
-        notes_query = notes_query.filter(or_(Note.content.ilike(f'%{query}%'), Note.category.ilike(f'%{query}%')))
-    
-    notes = notes_query.all()
-    return jsonify({"notes": [{"id": note.id, "content": note.content, "category": note.category} for note in notes]})
-
-@app.route('/delete_note/<int:note_id>', methods=['DELETE'])
-@login_required
-def delete_note(note_id):
-    note = Note.query.get(note_id)
-    if note and note.user_id == current_user.id:
-        db.session.delete(note)
-        db.session.commit()
-        return jsonify({"success": True, "message": "Note deleted successfully"})
-    return jsonify({"success": False, "message": "Note not found or unauthorized"}), 404
+    if current_user.is_authenticated:
+        return redirect(url_for('chat'))
+    return render_template('index.html')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    if current_user.is_authenticated:
-        return redirect(url_for('chat_page'))
     if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
+        username = request.form['username']
+        password = request.form['password']
         
         user = User.query.filter_by(username=username).first()
         if user:
-            flash('Username already exists', 'error')
+            flash('Username already exists')
             return redirect(url_for('register'))
         
-        new_user = User(username=username)
-        new_user.set_password(password)
+        new_user = User(username=username, password_hash=generate_password_hash(password))
         db.session.add(new_user)
         db.session.commit()
         
-        app.logger.info(f'New user registered: {username}')
-        flash('Registration successful. Please log in.', 'success')
+        flash('Registration successful')
         return redirect(url_for('login'))
     
     return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    app.logger.info("Login route accessed")
-    if current_user.is_authenticated:
-        app.logger.info(f"User {current_user.username} already authenticated, redirecting to chat_page")
-        return redirect(url_for('chat_page'))
     if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
+        username = request.form['username']
+        password = request.form['password']
         
         user = User.query.filter_by(username=username).first()
-        if user and user.check_password(password):
+        if user and check_password_hash(user.password_hash, password):
             login_user(user)
-            flask_session['selected_model'] = 'gpt-4o'  # Set default model on login
-            app.logger.info(f'User {username} logged in successfully')
-            flash('Logged in successfully.', 'success')
-            app.logger.info(f"Redirecting to chat_page for user {username}")
-            return redirect(url_for('chat_page'))
+            return redirect(url_for('chat'))
         else:
-            flash('Invalid username or password', 'error')
-            app.logger.warning(f'Failed login attempt for username: {username}')
+            flash('Invalid username or password')
     
-    app.logger.info("Rendering login template")
     return render_template('login.html')
 
 @app.route('/logout')
 @login_required
 def logout():
-    app.logger.info(f'User {current_user.username} logged out')
     logout_user()
     return redirect(url_for('index'))
 
-@app.route('/<path:path>')
-def catch_all(path):
-    app.logger.warning(f"Unexpected route accessed: /{path}")
-    return redirect(url_for('index'))
+@app.route('/chat')
+@login_required
+def chat():
+    return render_template('chat.html')
+
+@app.route('/save_note', methods=['POST'])
+@login_required
+def save_note():
+    note_content = request.json['note']
+    category = request.json.get('category', 'Uncategorized')
+    max_order = db.session.query(db.func.max(Note.order)).filter(Note.user_id == current_user.id).scalar() or 0
+    new_note = Note(content=note_content, category=category, user_id=current_user.id, order=max_order + 1)
+    db.session.add(new_note)
+    db.session.commit()
+    return jsonify({"success": True, "notes": [{"id": note.id, "content": note.content, "category": note.category, "order": note.order} for note in current_user.notes]})
+
+@app.route('/get_notes', methods=['GET'])
+@login_required
+def get_notes():
+    notes = Note.query.filter_by(user_id=current_user.id).order_by(Note.order).all()
+    return jsonify({"notes": [{"id": note.id, "content": note.content, "category": note.category, "order": note.order} for note in notes]})
+
+@app.route('/delete_note/<int:note_id>', methods=['DELETE'])
+@login_required
+def delete_note(note_id):
+    note = Note.query.get_or_404(note_id)
+    if note.user_id != current_user.id:
+        return jsonify({"success": False, "message": "Unauthorized"}), 403
+    db.session.delete(note)
+    db.session.commit()
+    return jsonify({"success": True})
 
 @app.route('/update_notes_order', methods=['POST'])
 @login_required
 def update_notes_order():
-    note_ids = request.json.get('notes', [])
-    try:
-        for index, note_id in enumerate(note_ids):
-            note = Note.query.get(note_id)
-            if note and note.user_id == current_user.id:
-                note.order = index
-        db.session.commit()
-        return jsonify({"success": True, "message": "Notes order updated successfully"})
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"success": False, "message": str(e)}), 500
+    new_order = request.json['notes']
+    for index, note_id in enumerate(new_order):
+        note = Note.query.get(note_id)
+        if note and note.user_id == current_user.id:
+            note.order = index
+    db.session.commit()
+    return jsonify({"success": True})
 
 @app.route('/generate_article', methods=['POST'])
 @login_required
 def generate_article():
-    note_ids = request.json.get('note_ids', [])
+    note_ids = request.json['note_ids']
     notes = Note.query.filter(Note.id.in_(note_ids), Note.user_id == current_user.id).all()
     
     if not notes:
-        return jsonify({"success": False, "message": "No valid notes selected"}), 400
+        return jsonify({"success": False, "message": "No valid notes found"})
     
-    note_contents = [note.content for note in notes]
-    prompt = f"Generate a coherent article based on the following notes:\n\n" + "\n\n".join(note_contents)
+    # Here you would typically use an AI model to generate the article
+    # For now, we'll just concatenate the notes
+    article_content = "\n\n".join([note.content for note in notes])
+    article_title = f"Generated Article {len(Article.query.filter_by(user_id=current_user.id).all()) + 1}"
     
-    try:
-        completion = openai_client.chat.completions.create(
-            model="gpt-4o",  # Using the more advanced model for article generation
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant that generates articles based on given notes."},
-                {"role": "user", "content": prompt}
-            ],
-            max_tokens=500
-        )
-        
-        article_content = completion.choices[0].message.content.strip()
-        
-        # Generate a title for the article
-        title_prompt = f"Generate a short, catchy title for this article:\n\n{article_content[:100]}..."
-        title_completion = openai_client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant that generates catchy titles."},
-                {"role": "user", "content": title_prompt}
-            ],
-            max_tokens=20
-        )
-        
-        article_title = title_completion.choices[0].message.content.strip()
-        
-        new_article = Article(title=article_title, content=article_content, user_id=current_user.id)
-        db.session.add(new_article)
-        db.session.commit()
-        
-        return jsonify({"success": True, "article": {"title": article_title, "content": article_content}})
-    except Exception as e:
-        app.logger.error(f"Error generating article: {str(e)}")
-        return jsonify({"success": False, "message": str(e)}), 500
+    new_article = Article(title=article_title, content=article_content, user_id=current_user.id)
+    db.session.add(new_article)
+    db.session.commit()
+    
+    return jsonify({
+        "success": True,
+        "article": {
+            "id": new_article.id,
+            "title": new_article.title,
+            "content": new_article.content
+        }
+    })
 
 @app.route('/get_articles', methods=['GET'])
 @login_required
 def get_articles():
     articles = Article.query.filter_by(user_id=current_user.id).all()
-    return jsonify({"articles": [{"id": article.id, "title": article.title, "content": article.content} for article in articles]})
-
-with app.app_context():
-    db.create_all()
+    return jsonify({
+        "articles": [
+            {
+                "id": article.id,
+                "title": article.title,
+                "content": article.content
+            } for article in articles
+        ]
+    })
 
 if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
     app.run(host='0.0.0.0', port=5000, debug=True)

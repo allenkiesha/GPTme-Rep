@@ -278,47 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return matchesSearch && matchesCategory;
         });
 
-        notesList.innerHTML = '';
-        filteredNotes.forEach((note) => {
-            const noteElement = document.createElement('div');
-            noteElement.classList.add('mb-2', 'p-2', 'flex', 'justify-between', 'items-center', 'cursor-move');
-            noteElement.setAttribute('draggable', 'true');
-            noteElement.setAttribute('data-note-id', note.id);
-            noteElement.innerHTML = `
-                <div class="flex items-center">
-                    <input type="checkbox" class="note-checkbox mr-2" data-note-id="${note.id}">
-                    <div>
-                        <p class="font-bold">${note.category}</p>
-                        <p>${note.content}</p>
-                    </div>
-                </div>
-                <button class="delete-note-btn btn btn-danger" data-note-id="${note.id}">Delete</button>
-            `;
-            notesList.appendChild(noteElement);
-
-            noteElement.addEventListener('dragstart', dragStart);
-            noteElement.addEventListener('dragover', dragOver);
-            noteElement.addEventListener('drop', drop);
-        });
-
-        document.querySelectorAll('.delete-note-btn').forEach(button => {
-            button.addEventListener('click', async (e) => {
-                const noteId = e.target.getAttribute('data-note-id');
-                await deleteNote(noteId);
-            });
-        });
-
-        document.querySelectorAll('.note-checkbox').forEach(checkbox => {
-            checkbox.addEventListener('change', (e) => {
-                const noteId = e.target.getAttribute('data-note-id');
-                if (e.target.checked) {
-                    selectedNotes.add(noteId);
-                } else {
-                    selectedNotes.delete(noteId);
-                }
-                updateGenerateArticleButton();
-            });
-        });
+        updateNotesList(filteredNotes);
     }
 
     function dragStart(e) {
@@ -418,6 +378,32 @@ document.addEventListener('DOMContentLoaded', () => {
         articlesList.appendChild(articleElement);
     }
 
+    async function fetchArticles() {
+        try {
+            const response = await fetch('/get_articles');
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            displayArticles(data.articles);
+        } catch (error) {
+            console.error('Error fetching articles:', error);
+        }
+    }
+
+    function displayArticles(articles) {
+        articlesList.innerHTML = '';
+        articles.forEach(article => {
+            const articleElement = document.createElement('div');
+            articleElement.classList.add('mb-4', 'p-2', 'bg-gray-800', 'rounded');
+            articleElement.innerHTML = `
+                <h3 class="font-bold mb-2">${article.title}</h3>
+                <p>${article.content}</p>
+            `;
+            articlesList.appendChild(articleElement);
+        });
+    }
+
     fetch('/get_notes')
         .then(response => response.json())
         .then(data => {
@@ -459,4 +445,5 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     createNewSession();
+    fetchArticles();
 });
