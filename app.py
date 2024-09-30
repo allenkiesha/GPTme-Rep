@@ -34,6 +34,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     password_hash = db.Column(db.String(120), nullable=False)
     notes = db.relationship('Note', backref='user', lazy=True)
+    articles = db.relationship('Article', backref='user', lazy=True)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -45,6 +46,13 @@ class Note(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
     category = db.Column(db.String(50), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    order = db.Column(db.Integer, nullable=False, default=0)
+
+class Article(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    content = db.Column(db.Text, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 @login_manager.user_loader
@@ -260,6 +268,73 @@ def logout():
 def catch_all(path):
     app.logger.warning(f"Unexpected route accessed: /{path}")
     return redirect(url_for('index'))
+
+@app.route('/update_notes_order', methods=['POST'])
+@login_required
+def update_notes_order():
+    note_ids = request.json.get('notes', [])
+    try:
+        for index, note_id in enumerate(note_ids):
+            note = Note.query.get(note_id)
+            if note and note.user_id == current_user.id:
+                note.order = index
+        db.session.commit()
+        return jsonify({"success": True, "message": "Notes order updated successfully"})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/generate_article', methods=['POST'])
+@login_required
+def generate_article():
+    note_ids = request.json.get('note_ids', [])
+    notes = Note.query.filter(Note.id.in_(note_ids), Note.user_id == current_user.id).all()
+    
+    if not notes:
+        return jsonify({"success": False, "message": "No valid notes selected"}), 400
+    
+    note_contents = [note.content for note in notes]
+    prompt = f"Generate a coherent article based on the following notes:\n\n" + "\n\n".join(note_contents)
+    
+    try:
+        completion = openai_client.chat.completions.create(
+            model="gpt-4o",  # Using the more advanced model for article generation
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant that generates articles based on given notes."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=500
+        )
+        
+        article_content = completion.choices[0].message.content.strip()
+        
+        # Generate a title for the article
+        title_prompt = f"Generate a short, catchy title for this article:\n\n{article_content[:100]}..."
+        title_completion = openai_client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant that generates catchy titles."},
+                {"role": "user", "content": title_prompt}
+            ],
+            max_tokens=20
+        )
+        
+        article_title = title_completion.choices[0].message.content.strip()
+        
+        new_article = Article(title=article_title, content=article_content, user_id=current_user.id)
+        db.session.add(new_article)
+        db.session.commit()
+        
+        return jsonify({"success": True, "article": {"title": article_title, "content": article_content}})
+    except Exception as e:
+        app.logger.error(f"Error generating article: {str(e)}")
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/get_articles', methods=['GET'])
+@login_required
+def get_articles():
+    articles = Article.query.filter_by(user_id=current_user.id).all()
+    return jsonify({"articles": [{"id": article.id, "title": article.title, "content": article.content} for article in articles]})
 
 with app.app_context():
     db.create_all()
