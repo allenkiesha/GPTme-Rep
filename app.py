@@ -5,9 +5,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from openai import OpenAI
-from sqlalchemy import or_, func
+from sqlalchemy import or_
 import uuid
-from flask_migrate import Migrate
 
 logging.basicConfig(level=logging.INFO)
 
@@ -17,7 +16,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
-migrate = Migrate(app, db)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
@@ -48,7 +46,6 @@ class Note(db.Model):
     content = db.Column(db.Text, nullable=False)
     category = db.Column(db.String(50), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    order = db.Column(db.Integer, nullable=False, default=0)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -166,20 +163,15 @@ def get_session_messages(session_id):
 def save_note():
     note_content = request.json['note']
     category = request.json.get('category', 'Uncategorized')
-    
-    # Get the highest order value for the current user's notes
-    highest_order = db.session.query(func.max(Note.order)).filter_by(user_id=current_user.id).scalar() or 0
-    
-    new_note = Note(content=note_content, category=category, user_id=current_user.id, order=highest_order + 1)
+    new_note = Note(content=note_content, category=category, user_id=current_user.id)
     db.session.add(new_note)
     db.session.commit()
-    return jsonify({"success": True, "note": {"id": new_note.id, "content": new_note.content, "category": new_note.category, "order": new_note.order}})
+    return jsonify({"success": True, "notes": [{"id": note.id, "content": note.content, "category": note.category} for note in current_user.notes]})
 
 @app.route('/get_notes', methods=['GET'])
 @login_required
 def get_notes():
-    notes = Note.query.filter_by(user_id=current_user.id).order_by(Note.order).all()
-    return jsonify({"notes": [{"id": note.id, "content": note.content, "category": note.category, "order": note.order} for note in notes]})
+    return jsonify({"notes": [{"id": note.id, "content": note.content, "category": note.category} for note in current_user.notes]})
 
 @app.route('/search_notes', methods=['GET'])
 @login_required
@@ -195,8 +187,8 @@ def search_notes():
     if query:
         notes_query = notes_query.filter(or_(Note.content.ilike(f'%{query}%'), Note.category.ilike(f'%{query}%')))
     
-    notes = notes_query.order_by(Note.order).all()
-    return jsonify({"notes": [{"id": note.id, "content": note.content, "category": note.category, "order": note.order} for note in notes]})
+    notes = notes_query.all()
+    return jsonify({"notes": [{"id": note.id, "content": note.content, "category": note.category} for note in notes]})
 
 @app.route('/delete_note/<int:note_id>', methods=['DELETE'])
 @login_required
@@ -207,17 +199,6 @@ def delete_note(note_id):
         db.session.commit()
         return jsonify({"success": True, "message": "Note deleted successfully"})
     return jsonify({"success": False, "message": "Note not found or unauthorized"}), 404
-
-@app.route('/update_note_order', methods=['POST'])
-@login_required
-def update_note_order():
-    new_order = request.json['new_order']
-    for index, note_id in enumerate(new_order):
-        note = Note.query.get(note_id)
-        if note and note.user_id == current_user.id:
-            note.order = index
-    db.session.commit()
-    return jsonify({"success": True, "message": "Note order updated successfully"})
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():

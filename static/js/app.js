@@ -178,13 +178,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const data = await response.json();
-            if (data.success) {
-                notes.push(data.note);
-                updateNotesList();
-                updateCategoryFilter();
-            } else {
-                console.error('Error saving note:', data.message);
-            }
+            notes = data.notes;
+            updateNotesList();
+            updateCategoryFilter();
         } catch (error) {
             console.error('Error saving note:', error);
         }
@@ -194,9 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
         notesList.innerHTML = '';
         notes.forEach((note) => {
             const noteElement = document.createElement('div');
-            noteElement.classList.add('mb-2', 'p-2', 'flex', 'justify-between', 'items-center', 'cursor-move');
-            noteElement.setAttribute('draggable', 'true');
-            noteElement.setAttribute('data-note-id', note.id);
+            noteElement.classList.add('mb-2', 'p-2', 'flex', 'justify-between', 'items-center');
             noteElement.innerHTML = `
                 <div>
                     <p class="font-bold">${note.category}</p>
@@ -205,13 +199,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button class="delete-note-btn btn btn-danger" data-note-id="${note.id}">Delete</button>
             `;
             notesList.appendChild(noteElement);
-
-            // Add drag and drop event listeners
-            noteElement.addEventListener('dragstart', dragStart);
-            noteElement.addEventListener('dragover', dragOver);
-            noteElement.addEventListener('drop', drop);
-            noteElement.addEventListener('dragenter', dragEnter);
-            noteElement.addEventListener('dragleave', dragLeave);
         });
 
         // Add event listeners to delete buttons
@@ -221,73 +208,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 await deleteNote(noteId);
             });
         });
-    }
-
-    function dragStart(e) {
-        e.dataTransfer.setData('text/plain', e.target.getAttribute('data-note-id'));
-        e.target.classList.add('opacity-50');
-    }
-
-    function dragOver(e) {
-        e.preventDefault();
-    }
-
-    function dragEnter(e) {
-        e.target.classList.add('bg-gray-100');
-    }
-
-    function dragLeave(e) {
-        e.target.classList.remove('bg-gray-100');
-    }
-
-    function drop(e) {
-        e.preventDefault();
-        const noteId = e.dataTransfer.getData('text');
-        const draggableElement = document.querySelector(`[data-note-id="${noteId}"]`);
-        const dropzone = e.target.closest('.cursor-move');
-        
-        if (dropzone && draggableElement !== dropzone) {
-            const allNotes = Array.from(notesList.children);
-            const fromIndex = allNotes.indexOf(draggableElement);
-            const toIndex = allNotes.indexOf(dropzone);
-            
-            if (fromIndex < toIndex) {
-                notesList.insertBefore(draggableElement, dropzone.nextSibling);
-            } else {
-                notesList.insertBefore(draggableElement, dropzone);
-            }
-            
-            updateNoteOrder();
-        }
-        
-        draggableElement.classList.remove('opacity-50');
-        dropzone.classList.remove('bg-gray-100');
-    }
-
-    async function updateNoteOrder() {
-        const newOrder = Array.from(notesList.children).map(noteElement => noteElement.getAttribute('data-note-id'));
-        try {
-            const response = await fetch('/update_note_order', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ new_order: newOrder }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-
-            const data = await response.json();
-            if (data.success) {
-                console.log('Note order updated successfully');
-            } else {
-                console.error('Error updating note order:', data.message);
-            }
-        } catch (error) {
-            console.error('Error updating note order:', error);
-        }
     }
 
     async function deleteNote(noteId) {
@@ -340,9 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
         notesList.innerHTML = '';
         filteredNotes.forEach((note) => {
             const noteElement = document.createElement('div');
-            noteElement.classList.add('mb-2', 'p-2', 'flex', 'justify-between', 'items-center', 'cursor-move');
-            noteElement.setAttribute('draggable', 'true');
-            noteElement.setAttribute('data-note-id', note.id);
+            noteElement.classList.add('mb-2', 'p-2', 'flex', 'justify-between', 'items-center');
             noteElement.innerHTML = `
                 <div>
                     <p class="font-bold">${note.category}</p>
@@ -351,13 +269,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button class="delete-note-btn btn btn-danger" data-note-id="${note.id}">Delete</button>
             `;
             notesList.appendChild(noteElement);
-
-            // Add drag and drop event listeners
-            noteElement.addEventListener('dragstart', dragStart);
-            noteElement.addEventListener('dragover', dragOver);
-            noteElement.addEventListener('drop', drop);
-            noteElement.addEventListener('dragenter', dragEnter);
-            noteElement.addEventListener('dragleave', dragLeave);
         });
 
         // Add event listeners to delete buttons
