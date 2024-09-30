@@ -80,10 +80,18 @@ body {
 }
 
 #new-chat-btn {
+    background-color: transparent;
+    border: 1px solid #A0A0A0;
+    color: #A0A0A0;
     border-radius: 2rem;
-    border: 1px solid #606060;
     padding: 10px 0;
     margin: 0 0 30px 0;
+    transition: all 0.3s ease;
+}
+
+#new-chat-btn:hover {
+    background-color: #A0A0A0;
+    color: #0F0F0F;
 }
 
 #notes-list div {
@@ -107,6 +115,13 @@ input[type="text"], select {
     font-size: 1rem;
     background-color: #1D1D1D;
     color: #e0e0e0;
+    border: 1px solid #3D3D3D;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+input[type="text"]:focus, select:focus {
+    border-color: #60a5fa;
 }
 
 /* Responsive adjustments */
@@ -178,4 +193,13 @@ label {
 
 ::-webkit-scrollbar-thumb:hover {
     background: #718096;
+}
+
+/* Custom dropdown styles */
+.custom-dropdown {
+    @apply bg-gray-800 text-white border border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+}
+
+.custom-dropdown option {
+    @apply bg-gray-800 text-white;
 }
