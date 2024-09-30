@@ -79,7 +79,7 @@ body {
 
 #new-chat-btn {
     background-color: transparent;
-    border: 2px solid #4A5568;
+    border: 1px solid #343434;
     color: #E2E8F0;
     border-radius: 9999px;
     padding: 0.5rem 1rem;
@@ -92,8 +92,8 @@ body {
 }
 
 #new-chat-btn:hover {
-    border-color: #63B3ED;
-    color: #FFFFFF;
+    border-color: #CFAEFE;
+    color: #FAFAFa;
 }
 
 #new-chat-btn svg {
