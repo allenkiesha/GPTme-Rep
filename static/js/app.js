@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', () => {
     const chatForm = document.getElementById('chat-form');
     const userInput = document.getElementById('user-input');
@@ -8,7 +7,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const categoryFilter = document.getElementById('category-filter');
     const newChatBtn = document.getElementById('new-chat-btn');
     const useSelectedNotesBtn = document.getElementById('use-selected-notes');
-    const chatSessions = document.getElementById('chat-sessions');
 
     let notes = [];
     let currentSessionId = null;
@@ -22,7 +20,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentSessionId = data.session_id;
                 chatContainer.innerHTML = '';
                 userInput.value = '';
-                addSessionToSidebar(currentSessionId, 'Untitled Chat');
             }
         } catch (error) {
             console.error('Error creating new session:', error);
@@ -36,11 +33,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ message, session_id: currentSessionId }),
+                body: JSON.stringify({ message }),
             });
             const data = await response.json();
             if (data.title) {
-                updateSessionTitle(currentSessionId, data.title);
+                addSessionToSidebar(currentSessionId, data.title);
             }
         } catch (error) {
             console.error('Error generating session title:', error);
@@ -48,19 +45,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function addSessionToSidebar(sessionId, title) {
+        const sessionsList = document.getElementById('chat-sessions');
         const sessionItem = document.createElement('li');
         sessionItem.textContent = title;
         sessionItem.classList.add('cursor-pointer', 'hover:bg-gray-200', 'p-2', 'rounded', 'truncate');
         sessionItem.setAttribute('data-session-id', sessionId);
         sessionItem.addEventListener('click', () => switchChatSession(sessionId));
-        chatSessions.appendChild(sessionItem);
-    }
-
-    function updateSessionTitle(sessionId, title) {
-        const sessionItem = chatSessions.querySelector(`[data-session-id="${sessionId}"]`);
-        if (sessionItem) {
-            sessionItem.textContent = title;
-        }
+        sessionsList.appendChild(sessionItem);
     }
 
     async function switchChatSession(sessionId) {
@@ -106,7 +97,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await response.json();
                 appendMessage('assistant', data.response, data.is_essay, true);
 
-                if (!currentSessionId) {
+                const sessionsList = document.getElementById('chat-sessions');
+                if (sessionsList.children.length === 0) {
                     await generateSessionTitle(message);
                 }
             } catch (error) {
@@ -170,9 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function formatEssayContent(content) {
-        const paragraphs = content.split('
-
-');
+        const paragraphs = content.split('\n\n');
         let formattedContent = `<h2>${paragraphs[0]}</h2>`;
         for (let i = 1; i < paragraphs.length; i++) {
             formattedContent += `<p>${paragraphs[i]}</p>`;
@@ -358,7 +348,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ note_ids: Array.from(selectedNotes), session_id: currentSessionId }),
+                body: JSON.stringify({ note_ids: Array.from(selectedNotes) }),
             });
 
             if (!response.ok) {
@@ -425,17 +415,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Load existing chat sessions
-    chatSessions.querySelectorAll('li').forEach(sessionItem => {
-        sessionItem.addEventListener('click', () => switchChatSession(sessionItem.getAttribute('data-session-id')));
-    });
-
-    // Create a new session on page load if there are no existing sessions
-    if (chatSessions.children.length === 0) {
-        createNewSession();
-    } else {
-        // Load the most recent session
-        const mostRecentSession = chatSessions.children[0];
-        switchChatSession(mostRecentSession.getAttribute('data-session-id'));
-    }
+    createNewSession();
 });

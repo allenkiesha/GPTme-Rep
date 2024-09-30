@@ -21,11 +21,7 @@
                     </button>
                 </div>
                 <ul id="chat-sessions" class="mb-4 chat-sessions overflow-y-auto">
-                    {% for session in chat_sessions %}
-                        <li class="cursor-pointer hover:bg-gray-200 p-2 rounded truncate" data-session-id="{{ session.id }}">
-                            {{ session.title or 'Untitled Chat' }}
-                        </li>
-                    {% endfor %}
+                    <!-- Chat sessions will be added here dynamically -->
                 </ul>
                 
                 <!-- AI model selection -->
