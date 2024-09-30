@@ -1,11 +1,12 @@
 import os
 import logging
-from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, session
+from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, session as flask_session
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from openai import OpenAI
 from sqlalchemy import or_
+import uuid
 
 logging.basicConfig(level=logging.INFO)
 
@@ -52,12 +53,12 @@ def load_user(user_id):
 
 @app.route('/')
 def index():
-    # Temporarily redirect to chat page for testing
     return redirect(url_for('chat_page'))
 
 @app.route('/chat')
+@login_required
 def chat_page():
-    app.logger.info(f"Chat page accessed")
+    app.logger.info(f"Chat page accessed by user {current_user.username}")
     return render_template('chat.html', ai_models=AI_MODELS)
 
 @app.route('/select_model', methods=['POST'])
@@ -65,17 +66,31 @@ def chat_page():
 def select_model():
     model = request.form.get('model')
     if model in AI_MODELS:
-        session['selected_model'] = model
+        flask_session['selected_model'] = model
         flash(f'Model changed to {AI_MODELS[model]["name"]}', 'success')
     else:
         flash('Invalid model selection', 'error')
-    return redirect(url_for('chat_page'))
+    return jsonify({"success": True})
+
+@app.route('/new_session', methods=['POST'])
+@login_required
+def new_session():
+    session_id = str(uuid.uuid4())
+    if 'chat_sessions' not in flask_session:
+        flask_session['chat_sessions'] = []
+    flask_session['chat_sessions'].append(session_id)
+    flask_session['current_session'] = session_id
+    return jsonify({"session_id": session_id})
 
 @app.route('/chat', methods=['POST'])
 @login_required
 def chat():
     user_message = request.json['message']
-    selected_model = session.get('selected_model', 'gpt-4o')
+    session_id = flask_session.get('current_session')
+    if not session_id:
+        return jsonify({"error": "No active session"}), 400
+
+    selected_model = flask_session.get('selected_model', 'gpt-4o')
     
     system_messages = {
         'gpt-4o': "You are a formal and detailed AI assistant. Provide comprehensive and well-structured responses.",
@@ -96,10 +111,31 @@ def chat():
         if not ai_response:
             raise ValueError("OpenAI returned an empty response.")
         
+        if 'chat_history' not in flask_session:
+            flask_session['chat_history'] = {}
+        if session_id not in flask_session['chat_history']:
+            flask_session['chat_history'][session_id] = []
+        
+        flask_session['chat_history'][session_id].append({
+            "role": "user",
+            "content": user_message
+        })
+        flask_session['chat_history'][session_id].append({
+            "role": "assistant",
+            "content": ai_response
+        })
+        
         return jsonify({"response": ai_response})
     except Exception as e:
         app.logger.error(f"Error in chat: {str(e)}")
         return jsonify({"error": str(e)}), 500
+
+@app.route('/get_session_messages/<session_id>', methods=['GET'])
+@login_required
+def get_session_messages(session_id):
+    chat_history = flask_session.get('chat_history', {})
+    session_messages = chat_history.get(session_id, [])
+    return jsonify({"messages": session_messages})
 
 @app.route('/save_note', methods=['POST'])
 @login_required
@@ -180,7 +216,7 @@ def login():
         user = User.query.filter_by(username=username).first()
         if user and user.check_password(password):
             login_user(user)
-            session['selected_model'] = 'gpt-4o'  # Set default model on login
+            flask_session['selected_model'] = 'gpt-4o'  # Set default model on login
             app.logger.info(f'User {username} logged in successfully')
             flash('Logged in successfully.', 'success')
             app.logger.info(f"Redirecting to chat_page for user {username}")
@@ -205,7 +241,6 @@ def catch_all(path):
     return redirect(url_for('index'))
 
 with app.app_context():
-    db.drop_all()
     db.create_all()
 
 if __name__ == '__main__':

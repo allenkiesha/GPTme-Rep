@@ -28,12 +28,12 @@
             <!-- Left Sidebar -->
             <div class="w-1/4 bg-gray-200 p-4 flex flex-col">
                 <h2 class="text-xl font-bold mb-4">Chat Sessions</h2>
+                <button id="new-chat-btn" class="bg-blue-500 text-white p-2 rounded mb-4">New Chat</button>
                 <ul id="chat-sessions" class="mb-4 chat-sessions">
-                    <!-- Placeholder for chat sessions -->
-                    <li class="cursor-pointer hover:bg-gray-300 p-2">Session 1</li>
+                    <!-- Chat sessions will be added here dynamically -->
                 </ul>
                 
-                <!-- Move AI model selection here -->
+                <!-- AI model selection -->
                 <div class="mt-auto">
                     <h2 class="text-xl font-bold mb-2">Select AI Model</h2>
                     <form action="{{ url_for('select_model') }}" method="POST">

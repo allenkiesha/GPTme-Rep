@@ -5,8 +5,51 @@ document.addEventListener('DOMContentLoaded', () => {
     const notesList = document.getElementById('notes-list');
     const searchInput = document.getElementById('search-input');
     const categoryFilter = document.getElementById('category-filter');
+    const newChatBtn = document.getElementById('new-chat-btn');
 
     let notes = [];
+    let currentSessionId = null;
+
+    async function createNewSession() {
+        try {
+            const response = await fetch('/new_session', { method: 'POST' });
+            const data = await response.json();
+            if (data.session_id) {
+                addSessionToSidebar(data.session_id);
+                switchChatSession(data.session_id);
+            }
+        } catch (error) {
+            console.error('Error creating new session:', error);
+        }
+    }
+
+    function addSessionToSidebar(sessionId) {
+        const sessionsList = document.getElementById('chat-sessions');
+        const sessionItem = document.createElement('li');
+        sessionItem.textContent = `Session ${sessionId.substr(0, 8)}`;
+        sessionItem.classList.add('cursor-pointer', 'hover:bg-gray-300', 'p-2');
+        sessionItem.setAttribute('data-session-id', sessionId);
+        sessionItem.addEventListener('click', () => switchChatSession(sessionId));
+        sessionsList.appendChild(sessionItem);
+    }
+
+    async function switchChatSession(sessionId) {
+        try {
+            const response = await fetch(`/get_session_messages/${sessionId}`);
+            const data = await response.json();
+            displaySessionMessages(data.messages);
+            currentSessionId = sessionId;
+        } catch (error) {
+            console.error('Error switching chat session:', error);
+        }
+    }
+
+    function displaySessionMessages(messages) {
+        chatContainer.innerHTML = '';
+        messages.forEach(message => {
+            appendMessage(message.role, message.content);
+        });
+    }
 
     if (chatForm) {
         chatForm.addEventListener('submit', async (e) => {
@@ -23,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ message }),
+                    body: JSON.stringify({ message, session_id: currentSessionId }),
                 });
 
                 if (!response.ok) {
@@ -45,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (sender === 'user') {
             messageDiv.classList.add('bg-blue-100', 'text-blue-800');
-        } else if (sender === 'ai') {
+        } else if (sender === 'assistant') {
             messageDiv.classList.add('bg-green-100', 'text-green-800');
         } else {
             messageDiv.classList.add('bg-red-100', 'text-red-800');
@@ -221,17 +264,28 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .catch(error => console.error('Error fetching notes:', error));
 
-    // New function to switch chat sessions
-    function switchChatSession(sessionId) {
-        console.log(`Switching to chat session ${sessionId}`);
-        // Placeholder: In the future, this will load the selected chat session
-    }
+    // Add event listener for the new chat button
+    newChatBtn.addEventListener('click', createNewSession);
 
-    // Add event listeners for chat session switching
-    document.querySelectorAll('#chat-sessions li').forEach(session => {
-        session.addEventListener('click', (e) => {
-            const sessionId = e.target.textContent.split(' ')[1];
-            switchChatSession(sessionId);
-        });
+    // Modify the model selection form
+    document.querySelector('form[action="/select_model"]').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        try {
+            const response = await fetch('/select_model', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            if (data.success) {
+                // Model changed successfully, no need to clear chat
+                console.log('Model changed successfully');
+            }
+        } catch (error) {
+            console.error('Error changing model:', error);
+        }
     });
+
+    // Create initial session
+    createNewSession();
 });
