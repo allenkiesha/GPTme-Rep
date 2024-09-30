@@ -85,6 +85,7 @@ body p, body .custom-dropdown, .user-message, .ai-message, .essay-message {
     position: relative;
     overflow: hidden;
     max-height: 600px;
+    display: flex;
 }
 
 .essay-message::before {
@@ -100,9 +101,41 @@ body p, body .custom-dropdown, .user-message, .ai-message, .essay-message {
 }
 
 .essay-message-content {
+    flex: 1;
     max-height: 550px;
     overflow-y: auto;
     padding-right: 1rem;
+}
+
+.essay-floating-buttons {
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.essay-floating-button {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    background-color: #CFAEFE;
+    color: #0A0A0A;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.essay-floating-button:hover {
+    background-color: #9D79FF;
+}
+
+.essay-floating-button svg {
+    width: 1.5rem;
+    height: 1.5rem;
 }
 
 .essay-message h2 {
