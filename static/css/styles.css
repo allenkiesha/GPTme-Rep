@@ -1,25 +1,86 @@
 @import 'https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css';
 
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f0f2f5;
+}
+
+.container {
+    max-width: 100%;
+    padding: 1rem;
+}
+
 .chat-container {
     height: calc(100vh - 200px);
     overflow-y: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    background-color: #ffffff;
 }
 
 .notes-sidebar {
     height: calc(100vh - 200px);
     overflow-y: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    background-color: #f8fafc;
 }
 
-/* New styles for left sidebar */
 .chat-sessions {
     max-height: calc(100vh - 300px);
     overflow-y: auto;
 }
 
-/* Adjust existing styles */
-.container {
-    max-width: 100%;
-    padding: 1rem;
+/* Message styles */
+.message {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+}
+
+.user-message {
+    background-color: #e3f2fd;
+    color: #1e3a8a;
+}
+
+.ai-message {
+    background-color: #f0f9ff;
+    color: #075985;
+}
+
+/* Button styles */
+.btn {
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary {
+    background-color: #3b82f6;
+    color: #ffffff;
+}
+
+.btn-primary:hover {
+    background-color: #2563eb;
+}
+
+.btn-danger {
+    background-color: #ef4444;
+    color: #ffffff;
+}
+
+.btn-danger:hover {
+    background-color: #dc2626;
+}
+
+/* Input styles */
+input[type="text"], select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+    font-size: 1rem;
 }
 
 /* Responsive adjustments */
@@ -27,10 +88,7 @@
     .flex.h-screen {
         flex-direction: column;
     }
-    .w-1/4 {
-        width: 100%;
-    }
-    .flex-1 {
+    .w-1/4, .flex-1 {
         width: 100%;
     }
 }

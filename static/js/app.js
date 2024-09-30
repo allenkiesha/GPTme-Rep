@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const sessionsList = document.getElementById('chat-sessions');
         const sessionItem = document.createElement('li');
         sessionItem.textContent = `Session ${sessionId.substr(0, 8)}`;
-        sessionItem.classList.add('cursor-pointer', 'hover:bg-gray-300', 'p-2');
+        sessionItem.classList.add('cursor-pointer', 'hover:bg-gray-200', 'p-2', 'rounded');
         sessionItem.setAttribute('data-session-id', sessionId);
         sessionItem.addEventListener('click', () => switchChatSession(sessionId));
         sessionsList.appendChild(sessionItem);
@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 const data = await response.json();
-                appendMessage('ai', data.response, true);
+                appendMessage('assistant', data.response, true);
             } catch (error) {
                 console.error('Error:', error);
                 appendMessage('error', 'An error occurred. Please try again.');
@@ -84,12 +84,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function appendMessage(sender, content, isSaveable = false) {
         const messageDiv = document.createElement('div');
-        messageDiv.classList.add('mb-4', 'p-2', 'rounded');
+        messageDiv.classList.add('message', 'mb-4', 'p-3', 'rounded');
 
         if (sender === 'user') {
-            messageDiv.classList.add('bg-blue-100', 'text-blue-800');
+            messageDiv.classList.add('user-message');
         } else if (sender === 'assistant') {
-            messageDiv.classList.add('bg-green-100', 'text-green-800');
+            messageDiv.classList.add('ai-message');
         } else {
             messageDiv.classList.add('bg-red-100', 'text-red-800');
         }
@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isSaveable) {
             const saveButton = document.createElement('button');
             saveButton.textContent = 'Save to Notes';
-            saveButton.classList.add('ml-2', 'px-2', 'py-1', 'bg-yellow-500', 'text-white', 'rounded');
+            saveButton.classList.add('btn', 'btn-primary', 'mt-2');
             saveButton.addEventListener('click', () => showSaveNoteModal(content));
             messageDiv.appendChild(saveButton);
         }
@@ -117,8 +117,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <textarea id="note-content" class="w-full p-2 border rounded mb-4" rows="4">${content}</textarea>
                 <input type="text" id="note-category" class="w-full p-2 border rounded mb-4" placeholder="Category">
                 <div class="flex justify-end">
-                    <button id="cancel-save" class="px-4 py-2 bg-gray-300 text-black rounded mr-2">Cancel</button>
-                    <button id="confirm-save" class="px-4 py-2 bg-blue-500 text-white rounded">Save</button>
+                    <button id="cancel-save" class="btn mr-2">Cancel</button>
+                    <button id="confirm-save" class="btn btn-primary">Save</button>
                 </div>
             </div>
         `;
@@ -170,7 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <p class="font-bold">${note.category}</p>
                     <p>${note.content}</p>
                 </div>
-                <button class="delete-note-btn px-2 py-1 bg-red-500 text-white rounded" data-note-id="${note.id}">Delete</button>
+                <button class="delete-note-btn btn btn-danger" data-note-id="${note.id}">Delete</button>
             `;
             notesList.appendChild(noteElement);
         });
@@ -240,7 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <p class="font-bold">${note.category}</p>
                     <p>${note.content}</p>
                 </div>
-                <button class="delete-note-btn px-2 py-1 bg-red-500 text-white rounded" data-note-id="${note.id}">Delete</button>
+                <button class="delete-note-btn btn btn-danger" data-note-id="${note.id}">Delete</button>
             `;
             notesList.appendChild(noteElement);
         });
