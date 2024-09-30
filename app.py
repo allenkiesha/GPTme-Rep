@@ -125,7 +125,7 @@ def chat():
                 {"role": "system", "content": system_messages[selected_model]},
                 {"role": "user", "content": user_message}
             ],
-            max_tokens=150
+            max_tokens=1000  # Increased max_tokens to accommodate longer responses
         )
         ai_response = completion.choices[0].message.content
         

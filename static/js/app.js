@@ -316,7 +316,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             if (data.success) {
                 const selectedNotesContent = data.notes.map(note => `${note.category}: ${note.content}`).join('\n\n');
-                userInput.value = `Selected notes:\n\n${selectedNotesContent}\n\nPlease summarize these notes and provide insights.`;
+                userInput.value = `Selected notes:\n\n${selectedNotesContent}\n\nPlease write a comprehensive essay that explores the topics in these notes. Draw connections between the ideas presented, analyze their relationships, and expand on the concepts to provide a deeper understanding of the subject matter. Your essay should be well-structured, with clear paragraphs, and should aim to provide new insights or perspectives based on the information given.`;
             } else {
                 console.error('Error getting selected notes:', data.message);
             }
