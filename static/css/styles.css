@@ -78,18 +78,30 @@ body {
 }
 
 #new-chat-btn {
-    background-color: transparent;
-    border: 1px solid #A0A0A0;
-    color: #A0A0A0;
-    border-radius: 2rem;
-    padding: 10px 0;
-    margin: 0 0 30px 0;
+    background-color: #2D3748;
+    border: 1px solid #4A5568;
+    color: #E2E8F0;
+    border-radius: 0.375rem;
+    padding: 0.5rem 1rem;
+    margin: 0 0 1.5rem 0;
     transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
 }
 
 #new-chat-btn:hover {
-    background-color: #A0A0A0;
-    color: #0F0F0F;
+    background-color: #4A5568;
+    border-color: #63B3ED;
+    color: #FFFFFF;
+}
+
+#new-chat-btn::before {
+    content: "+";
+    margin-right: 0.5rem;
+    font-size: 1.25rem;
+    font-weight: bold;
 }
 
 #notes-list div {
@@ -210,4 +222,15 @@ label {
     background-color: #343434;
     color: #ffffff;
     padding: 0.5rem;
+}
+
+.notes-icon {
+    display: inline-block;
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-right: 0.5rem;
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
 }
