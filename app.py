@@ -43,6 +43,11 @@ def load_user(user_id):
 def index():
     return render_template('index.html')
 
+@app.route('/chat')
+@login_required
+def chat_page():
+    return render_template('chat.html')
+
 @app.route('/chat', methods=['POST'])
 @login_required
 def chat():
@@ -107,7 +112,7 @@ def login():
         user = User.query.filter_by(username=username).first()
         if user and user.check_password(password):
             login_user(user)
-            return redirect(url_for('index'))
+            return redirect(url_for('chat_page'))
         else:
             flash('Invalid username or password')
     
