@@ -6,12 +6,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('search-input');
     const categoryFilter = document.getElementById('category-filter');
     const newChatBtn = document.getElementById('new-chat-btn');
-    const generateArticleBtn = document.getElementById('generate-article-btn');
-    const articlesList = document.getElementById('articles-list');
 
     let notes = [];
     let currentSessionId = null;
-    let selectedNotes = new Set();
 
     async function createNewSession() {
         try {
@@ -19,8 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             if (data.session_id) {
                 currentSessionId = data.session_id;
-                chatContainer.innerHTML = '';
-                userInput.value = '';
+                chatContainer.innerHTML = ''; // Clear the chat container
+                userInput.value = ''; // Clear the user input
+                // We'll generate the title after the user sends the first message
             }
         } catch (error) {
             console.error('Error creating new session:', error);
@@ -98,6 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await response.json();
                 appendMessage('assistant', data.response, true);
 
+                // Generate title if it's the first message of the session
                 const sessionsList = document.getElementById('chat-sessions');
                 if (sessionsList.children.length === 0) {
                     await generateSessionTitle(message);
@@ -191,42 +190,22 @@ document.addEventListener('DOMContentLoaded', () => {
         notesList.innerHTML = '';
         notes.forEach((note) => {
             const noteElement = document.createElement('div');
-            noteElement.classList.add('mb-2', 'p-2', 'flex', 'justify-between', 'items-center', 'cursor-move');
-            noteElement.setAttribute('draggable', 'true');
-            noteElement.setAttribute('data-note-id', note.id);
+            noteElement.classList.add('mb-2', 'p-2', 'flex', 'justify-between', 'items-center');
             noteElement.innerHTML = `
-                <div class="flex items-center">
-                    <input type="checkbox" class="note-checkbox mr-2" data-note-id="${note.id}">
-                    <div>
-                        <p class="font-bold">${note.category}</p>
-                        <p>${note.content}</p>
-                    </div>
+                <div>
+                    <p class="font-bold">${note.category}</p>
+                    <p>${note.content}</p>
                 </div>
                 <button class="delete-note-btn btn btn-danger" data-note-id="${note.id}">Delete</button>
             `;
             notesList.appendChild(noteElement);
-
-            noteElement.addEventListener('dragstart', dragStart);
-            noteElement.addEventListener('dragover', dragOver);
-            noteElement.addEventListener('drop', drop);
         });
 
+        // Add event listeners to delete buttons
         document.querySelectorAll('.delete-note-btn').forEach(button => {
             button.addEventListener('click', async (e) => {
                 const noteId = e.target.getAttribute('data-note-id');
                 await deleteNote(noteId);
-            });
-        });
-
-        document.querySelectorAll('.note-checkbox').forEach(checkbox => {
-            checkbox.addEventListener('change', (e) => {
-                const noteId = e.target.getAttribute('data-note-id');
-                if (e.target.checked) {
-                    selectedNotes.add(noteId);
-                } else {
-                    selectedNotes.delete(noteId);
-                }
-                updateGenerateArticleButton();
             });
         });
     }
@@ -278,132 +257,30 @@ document.addEventListener('DOMContentLoaded', () => {
             return matchesSearch && matchesCategory;
         });
 
-        updateNotesList(filteredNotes);
-    }
-
-    function dragStart(e) {
-        e.dataTransfer.setData('text/plain', e.target.getAttribute('data-note-id'));
-    }
-
-    function dragOver(e) {
-        e.preventDefault();
-    }
-
-    function drop(e) {
-        e.preventDefault();
-        const draggedNoteId = e.dataTransfer.getData('text');
-        const targetNoteId = e.target.closest('[data-note-id]').getAttribute('data-note-id');
-        
-        if (draggedNoteId !== targetNoteId) {
-            const draggedIndex = notes.findIndex(note => note.id.toString() === draggedNoteId);
-            const targetIndex = notes.findIndex(note => note.id.toString() === targetNoteId);
-            
-            const [reorderedNote] = notes.splice(draggedIndex, 1);
-            notes.splice(targetIndex, 0, reorderedNote);
-            
-            updateNotesList();
-            updateNotesOrder();
-        }
-    }
-
-    async function updateNotesOrder() {
-        try {
-            const response = await fetch('/update_notes_order', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ notes: notes.map(note => note.id) }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-
-            const data = await response.json();
-            if (data.success) {
-                console.log('Notes order updated successfully');
-            } else {
-                console.error('Error updating notes order:', data.message);
-            }
-        } catch (error) {
-            console.error('Error updating notes order:', error);
-        }
-    }
-
-    function updateGenerateArticleButton() {
-        if (selectedNotes.size > 0) {
-            generateArticleBtn.classList.remove('hidden');
-        } else {
-            generateArticleBtn.classList.add('hidden');
-        }
-    }
-
-    generateArticleBtn.addEventListener('click', async () => {
-        const selectedNoteIds = Array.from(selectedNotes);
-        try {
-            const response = await fetch('/generate_article', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ note_ids: selectedNoteIds }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-
-            const data = await response.json();
-            if (data.success) {
-                displayArticle(data.article);
-                selectedNotes.clear();
-                updateGenerateArticleButton();
-                updateNotesList();
-            } else {
-                console.error('Error generating article:', data.message);
-            }
-        } catch (error) {
-            console.error('Error generating article:', error);
-        }
-    });
-
-    function displayArticle(article) {
-        const articleElement = document.createElement('div');
-        articleElement.classList.add('mb-4', 'p-2', 'bg-gray-800', 'rounded');
-        articleElement.innerHTML = `
-            <h3 class="font-bold mb-2">${article.title}</h3>
-            <p>${article.content}</p>
-        `;
-        articlesList.appendChild(articleElement);
-    }
-
-    async function fetchArticles() {
-        try {
-            const response = await fetch('/get_articles');
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            const data = await response.json();
-            displayArticles(data.articles);
-        } catch (error) {
-            console.error('Error fetching articles:', error);
-        }
-    }
-
-    function displayArticles(articles) {
-        articlesList.innerHTML = '';
-        articles.forEach(article => {
-            const articleElement = document.createElement('div');
-            articleElement.classList.add('mb-4', 'p-2', 'bg-gray-800', 'rounded');
-            articleElement.innerHTML = `
-                <h3 class="font-bold mb-2">${article.title}</h3>
-                <p>${article.content}</p>
+        notesList.innerHTML = '';
+        filteredNotes.forEach((note) => {
+            const noteElement = document.createElement('div');
+            noteElement.classList.add('mb-2', 'p-2', 'flex', 'justify-between', 'items-center');
+            noteElement.innerHTML = `
+                <div>
+                    <p class="font-bold">${note.category}</p>
+                    <p>${note.content}</p>
+                </div>
+                <button class="delete-note-btn btn btn-danger" data-note-id="${note.id}">Delete</button>
             `;
-            articlesList.appendChild(articleElement);
+            notesList.appendChild(noteElement);
+        });
+
+        // Add event listeners to delete buttons
+        document.querySelectorAll('.delete-note-btn').forEach(button => {
+            button.addEventListener('click', async (e) => {
+                const noteId = e.target.getAttribute('data-note-id');
+                await deleteNote(noteId);
+            });
         });
     }
 
+    // Fetch initial notes
     fetch('/get_notes')
         .then(response => response.json())
         .then(data => {
@@ -413,8 +290,10 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .catch(error => console.error('Error fetching notes:', error));
 
+    // Add event listener for the new chat button
     newChatBtn.addEventListener('click', createNewSession);
 
+    // Modify the model selection form
     document.querySelector('form[action="/select_model"]').addEventListener('submit', async (e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
@@ -437,13 +316,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     submitButton.textContent = originalButtonText;
                     submitButton.classList.remove('bg-green-500');
                     submitButton.classList.add('bg-blue-500');
-                }, 2000);
+                }, 2000); // Revert after 2 seconds
             }
         } catch (error) {
             console.error('Error changing model:', error);
         }
     });
 
+    // Create initial session
     createNewSession();
-    fetchArticles();
 });

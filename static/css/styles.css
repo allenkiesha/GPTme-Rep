@@ -18,7 +18,7 @@ body {
     color: #e0e0e0;
 }
 
-.notes-sidebar, .articles-sidebar {
+.notes-sidebar {
     height: calc(100vh - 200px);
     overflow-y: auto;
     background-color: #0F0F0F;
@@ -79,7 +79,7 @@ body {
 
 #new-chat-btn {
     background-color: transparent;
-    border: 1px solid #343434;
+    border: 2px solid #4A5568;
     color: #E2E8F0;
     border-radius: 9999px;
     padding: 0.5rem 1rem;
@@ -92,8 +92,8 @@ body {
 }
 
 #new-chat-btn:hover {
-    border-color: #CFAEFE;
-    color: #FAFAFa;
+    border-color: #63B3ED;
+    color: #FFFFFF;
 }
 
 #new-chat-btn svg {
@@ -102,15 +102,17 @@ body {
     height: 1.25rem;
 }
 
-#notes-list div, #articles-list div {
+#notes-list div {
     border-radius: .25rem;
     background-color: #1D1D1D;
+    height: 200px;
     padding: 10px;
-    margin-bottom: 10px;
+    overflow: hidden;
+    text-overflow: ellipse;
 }
 
-#notes-list div.dragging {
-    opacity: 0.5;
+#notes-list {
+    background-color: #0F0F0F;
 }
 
 input[type="text"], select {
@@ -129,41 +131,11 @@ input[type="text"]:focus, select:focus {
     border-color: #60a5fa;
 }
 
-.cursor-move {
-    cursor: move;
-}
-
-.note-checkbox {
-    appearance: none;
-    -webkit-appearance: none;
-    width: 20px;
-    height: 20px;
-    border: 2px solid #CFAEFE;
-    border-radius: 4px;
-    outline: none;
-    cursor: pointer;
-    position: relative;
-}
-
-.note-checkbox:checked {
-    background-color: #CFAEFE;
-}
-
-.note-checkbox:checked::after {
-    content: '\2714';
-    font-size: 14px;
-    color: #0A0A0A;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-}
-
 @media (max-width: 1024px) {
     .flex.h-screen {
         flex-direction: column;
     }
-    .w-1/4, .flex-1, .w-1/5 {
+    .w-1/4, .flex-1 {
         width: 100%;
     }
 }
