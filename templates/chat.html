@@ -24,19 +24,31 @@
                 <a href="{{ url_for('logout') }}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Logout</a>
             </div>
         </div>
-        <div class="flex">
-            <div class="w-3/4 pr-4">
-                <div class="bg-white rounded-lg shadow-md p-4 mb-4">
+        <div class="flex h-screen">
+            <!-- Left Sidebar -->
+            <div class="w-1/4 bg-gray-200 p-4 flex flex-col">
+                <h2 class="text-xl font-bold mb-4">Chat Sessions</h2>
+                <ul id="chat-sessions" class="mb-4 chat-sessions">
+                    <!-- Placeholder for chat sessions -->
+                    <li class="cursor-pointer hover:bg-gray-300 p-2">Session 1</li>
+                </ul>
+                
+                <!-- Move AI model selection here -->
+                <div class="mt-auto">
                     <h2 class="text-xl font-bold mb-2">Select AI Model</h2>
-                    <form action="{{ url_for('select_model') }}" method="POST" class="mb-4">
+                    <form action="{{ url_for('select_model') }}" method="POST">
                         <select name="model" class="w-full p-2 border rounded">
                             {% for model_id, model_info in ai_models.items() %}
                                 <option value="{{ model_id }}">{{ model_info.name }} - {{ model_info.description }}</option>
                             {% endfor %}
                         </select>
-                        <button type="submit" class="mt-2 bg-blue-500 text-white p-2 rounded">Change Model</button>
+                        <button type="submit" class="mt-2 bg-blue-500 text-white p-2 rounded w-full">Change Model</button>
                     </form>
                 </div>
+            </div>
+
+            <!-- Main Chat Area -->
+            <div class="flex-1 flex flex-col">
                 <div class="bg-white rounded-lg shadow-md p-4 mb-4 chat-container"></div>
                 <form id="chat-form" class="mt-4">
                     <div class="flex">
@@ -45,19 +57,19 @@
                     </div>
                 </form>
             </div>
-            <div class="w-1/4">
-                <div class="bg-white rounded-lg shadow-md p-4 notes-sidebar">
-                    <h2 class="text-xl font-bold mb-2">Notes</h2>
-                    <div class="mb-4">
-                        <input type="text" id="search-input" class="w-full p-2 border rounded" placeholder="Search notes...">
-                    </div>
-                    <div class="mb-4">
-                        <select id="category-filter" class="w-full p-2 border rounded">
-                            <option value="">All Categories</option>
-                        </select>
-                    </div>
-                    <div id="notes-list"></div>
+
+            <!-- Notes Sidebar -->
+            <div class="w-1/4 bg-gray-100 p-4">
+                <h2 class="text-xl font-bold mb-2">Notes</h2>
+                <div class="mb-4">
+                    <input type="text" id="search-input" class="w-full p-2 border rounded" placeholder="Search notes...">
                 </div>
+                <div class="mb-4">
+                    <select id="category-filter" class="w-full p-2 border rounded">
+                        <option value="">All Categories</option>
+                    </select>
+                </div>
+                <div id="notes-list" class="notes-sidebar"></div>
             </div>
         </div>
     </div>

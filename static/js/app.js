@@ -220,4 +220,18 @@ document.addEventListener('DOMContentLoaded', () => {
             updateCategoryFilter();
         })
         .catch(error => console.error('Error fetching notes:', error));
+
+    // New function to switch chat sessions
+    function switchChatSession(sessionId) {
+        console.log(`Switching to chat session ${sessionId}`);
+        // Placeholder: In the future, this will load the selected chat session
+    }
+
+    // Add event listeners for chat session switching
+    document.querySelectorAll('#chat-sessions li').forEach(session => {
+        session.addEventListener('click', (e) => {
+            const sessionId = e.target.textContent.split(' ')[1];
+            switchChatSession(sessionId);
+        });
+    });
 });

@@ -52,16 +52,12 @@ def load_user(user_id):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    # Temporarily redirect to chat page for testing
+    return redirect(url_for('chat_page'))
 
 @app.route('/chat')
-@login_required
 def chat_page():
-    app.logger.info(f"Chat page accessed by user {current_user.username}")
-    if not current_user.is_authenticated:
-        app.logger.warning(f'Unauthenticated user tried to access chat page')
-        return redirect(url_for('login'))
-    app.logger.info(f'Rendering chat template for user {current_user.username}')
+    app.logger.info(f"Chat page accessed")
     return render_template('chat.html', ai_models=AI_MODELS)
 
 @app.route('/select_model', methods=['POST'])
