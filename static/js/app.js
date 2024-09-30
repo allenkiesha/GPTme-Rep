@@ -4,34 +4,36 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatContainer = document.querySelector('.chat-container');
     const notesSidebar = document.querySelector('.notes-sidebar');
 
-    chatForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const message = userInput.value.trim();
-        if (!message) return;
+    if (chatForm) {
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const message = userInput.value.trim();
+            if (!message) return;
 
-        appendMessage('user', message);
-        userInput.value = '';
+            appendMessage('user', message);
+            userInput.value = '';
 
-        try {
-            const response = await fetch('/chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ message }),
-            });
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message }),
+                });
 
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const data = await response.json();
+                appendMessage('ai', data.response, true);
+            } catch (error) {
+                console.error('Error:', error);
+                appendMessage('error', 'An error occurred. Please try again.');
             }
-
-            const data = await response.json();
-            appendMessage('ai', data.response, true);
-        } catch (error) {
-            console.error('Error:', error);
-            appendMessage('error', 'An error occurred. Please try again.');
-        }
-    });
+        });
+    }
 
     function appendMessage(sender, content, isSaveable = false) {
         const messageDiv = document.createElement('div');
@@ -91,8 +93,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Fetch initial notes
-    fetch('/get_notes')
-        .then(response => response.json())
-        .then(data => updateNotesSidebar(data.notes))
-        .catch(error => console.error('Error fetching notes:', error));
+    if (notesSidebar) {
+        fetch('/get_notes')
+            .then(response => response.json())
+            .then(data => updateNotesSidebar(data.notes))
+            .catch(error => console.error('Error fetching notes:', error));
+    }
 });
