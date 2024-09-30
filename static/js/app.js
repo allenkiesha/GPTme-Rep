@@ -271,6 +271,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('form[action="/select_model"]').addEventListener('submit', async (e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
+        const submitButton = e.target.querySelector('button[type="submit"]');
+        const originalButtonText = submitButton.textContent;
+
         try {
             const response = await fetch('/select_model', {
                 method: 'POST',
@@ -278,8 +281,16 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await response.json();
             if (data.success) {
-                // Model changed successfully, no need to clear chat
                 console.log('Model changed successfully');
+                submitButton.textContent = 'Model Updated';
+                submitButton.classList.add('bg-green-500');
+                submitButton.classList.remove('bg-blue-500');
+                
+                setTimeout(() => {
+                    submitButton.textContent = originalButtonText;
+                    submitButton.classList.remove('bg-green-500');
+                    submitButton.classList.add('bg-blue-500');
+                }, 2000); // Revert after 2 seconds
             }
         } catch (error) {
             console.error('Error changing model:', error);
