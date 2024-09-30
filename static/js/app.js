@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (error) {
             console.error('Error creating new session:', error);
+            displayErrorMessage('Failed to create a new session. Please try again.');
         }
     }
 
@@ -35,6 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updateSessionsList(data.sessions);
         } catch (error) {
             console.error('Error loading user sessions:', error);
+            displayErrorMessage('Failed to load chat sessions. Please refresh the page.');
         }
     }
 
@@ -68,11 +70,22 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.title) {
                 await loadUserSessions();
             } else if (data.error) {
-                console.error('Error generating title:', data.error);
+                throw new Error(data.error);
             }
         } catch (error) {
             console.error('Error generating session title:', error);
+            displayErrorMessage(`Failed to generate session title: ${error.message}`);
         }
+    }
+
+    function displayErrorMessage(message) {
+        const errorDiv = document.createElement('div');
+        errorDiv.textContent = message;
+        errorDiv.classList.add('error-message', 'bg-red-100', 'border', 'border-red-400', 'text-red-700', 'px-4', 'py-3', 'rounded', 'relative', 'mb-4');
+        chatContainer.insertBefore(errorDiv, chatContainer.firstChild);
+        setTimeout(() => {
+            errorDiv.remove();
+        }, 5000);
     }
 
     async function switchChatSession(sessionId) {
@@ -83,6 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
             currentSessionId = sessionId;
         } catch (error) {
             console.error('Error switching chat session:', error);
+            displayErrorMessage('Failed to switch chat session. Please try again.');
         }
     }
 
@@ -239,6 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updateCategoryFilter();
         } catch (error) {
             console.error('Error saving note:', error);
+            displayErrorMessage('Failed to save note. Please try again.');
         }
     }
 
@@ -302,6 +317,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (error) {
             console.error('Error toggling note selection:', error);
+            displayErrorMessage('Failed to select note. Please try again.');
         }
     }
 
@@ -322,10 +338,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateNotesList();
                 updateCategoryFilter();
             } else {
-                console.error('Error deleting note:', data.message);
+                throw new Error(data.message);
             }
         } catch (error) {
             console.error('Error deleting note:', error);
+            displayErrorMessage(`Failed to delete note: ${error.message}`);
         }
     }
 
@@ -382,10 +399,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.success) {
                 appendMessage('assistant', data.essay, true, true);
             } else {
-                console.error('Error generating essay:', data.message);
+                throw new Error(data.message);
             }
         } catch (error) {
             console.error('Error generating essay:', error);
+            displayErrorMessage(`Failed to generate essay: ${error.message}`);
         }
     });
 
@@ -405,7 +423,10 @@ document.addEventListener('DOMContentLoaded', () => {
             updateNotesList();
             updateCategoryFilter();
         })
-        .catch(error => console.error('Error fetching notes:', error));
+        .catch(error => {
+            console.error('Error fetching notes:', error);
+            displayErrorMessage('Failed to load notes. Please refresh the page.');
+        });
 
     newChatBtn.addEventListener('click', createNewSession);
 
@@ -432,9 +453,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     submitButton.classList.remove('bg-green-500');
                     submitButton.classList.add('bg-blue-500');
                 }, 2000);
+            } else {
+                throw new Error('Failed to change model');
             }
         } catch (error) {
             console.error('Error changing model:', error);
+            displayErrorMessage('Failed to change model. Please try again.');
         }
     });
 

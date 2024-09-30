@@ -99,9 +99,13 @@ def new_session():
 @app.route('/generate_title', methods=['POST'])
 @login_required
 def generate_title():
-    user_message = request.json['message']
-    session_id = request.json['session_id']
+    user_message = request.json.get('message')
+    session_id = request.json.get('session_id')
     selected_model = flask_session.get('selected_model', 'gpt-4o')
+    
+    if not user_message or not session_id:
+        app.logger.error("Missing required parameters for title generation")
+        return jsonify({"error": "Missing required parameters"}), 400
     
     app.logger.info(f"Generating title for session {session_id} with message: {user_message}")
     app.logger.info(f"Using model: {selected_model}")
@@ -124,14 +128,13 @@ def generate_title():
             chat_session.title = title
             db.session.commit()
             app.logger.info(f"Updated session {session_id} with title: {title}")
+            return jsonify({"title": title})
         else:
             app.logger.error(f"Chat session {session_id} not found")
             return jsonify({"error": "Chat session not found"}), 404
-        
-        return jsonify({"title": title})
     except Exception as e:
         app.logger.error(f"Error generating title: {str(e)}")
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "An error occurred while generating the title. Please try again."}), 500
 
 @app.route('/chat', methods=['POST'])
 @login_required
