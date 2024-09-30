@@ -25,7 +25,6 @@ openai_client = OpenAI(api_key=OPENAI_API_KEY)
 AI_MODELS = {
     'gpt-4o': {'name': 'GPT-4 Turbo', 'description': 'Advanced language model for complex tasks'},
     'gpt-4o-mini': {'name': 'GPT-4 Mini', 'description': 'Efficient model for simpler tasks'},
-    'claude-2': {'name': 'Claude 2', 'description': 'Alternative AI with unique capabilities'},
 }
 
 class User(UserMixin, db.Model):
@@ -80,10 +79,18 @@ def chat():
     user_message = request.json['message']
     selected_model = session.get('selected_model', 'gpt-4o')
     
+    system_messages = {
+        'gpt-4o': "You are a formal and detailed AI assistant. Provide comprehensive and well-structured responses.",
+        'gpt-4o-mini': "You are a casual and concise AI assistant. Provide brief and friendly responses."
+    }
+    
     try:
         completion = openai_client.chat.completions.create(
             model=selected_model,
-            messages=[{"role": "user", "content": user_message}],
+            messages=[
+                {"role": "system", "content": system_messages[selected_model]},
+                {"role": "user", "content": user_message}
+            ],
             max_tokens=150
         )
         ai_response = completion.choices[0].message.content
