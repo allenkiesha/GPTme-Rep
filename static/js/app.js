@@ -18,9 +18,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             if (data.session_id) {
                 currentSessionId = data.session_id;
-                chatContainer.innerHTML = ''; // Clear the chat container
-                userInput.value = ''; // Clear the user input
-                // We'll generate the title after the user sends the first message
+                chatContainer.innerHTML = '';
+                userInput.value = '';
             }
         } catch (error) {
             console.error('Error creating new session:', error);
@@ -98,7 +97,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await response.json();
                 appendMessage('assistant', data.response, true);
 
-                // Generate title if it's the first message of the session
                 const sessionsList = document.getElementById('chat-sessions');
                 if (sessionsList.children.length === 0) {
                     await generateSessionTitle(message);
@@ -207,7 +205,6 @@ document.addEventListener('DOMContentLoaded', () => {
             notesList.appendChild(noteElement);
         });
 
-        // Add event listeners to select and delete buttons
         document.querySelectorAll('.note-select').forEach(selectButton => {
             selectButton.addEventListener('click', (e) => {
                 const noteId = e.target.getAttribute('data-note-id');
@@ -316,7 +313,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Fetch initial notes
     fetch('/get_notes')
         .then(response => response.json())
         .then(data => {
@@ -326,10 +322,8 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .catch(error => console.error('Error fetching notes:', error));
 
-    // Add event listener for the new chat button
     newChatBtn.addEventListener('click', createNewSession);
 
-    // Modify the model selection form
     document.querySelector('form[action="/select_model"]').addEventListener('submit', async (e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
@@ -352,13 +346,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     submitButton.textContent = originalButtonText;
                     submitButton.classList.remove('bg-green-500');
                     submitButton.classList.add('bg-blue-500');
-                }, 2000); // Revert after 2 seconds
+                }, 2000);
             }
         } catch (error) {
             console.error('Error changing model:', error);
         }
     });
 
-    // Create initial session
     createNewSession();
 });
