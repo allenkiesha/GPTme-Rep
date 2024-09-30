@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const categoryFilter = document.getElementById('category-filter');
     const newChatBtn = document.getElementById('new-chat-btn');
     const useSelectedNotesBtn = document.getElementById('use-selected-notes');
+    const chatSessionsList = document.getElementById('chat-sessions');
 
     let notes = [];
     let currentSessionId = null;
@@ -20,10 +21,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentSessionId = data.session_id;
                 chatContainer.innerHTML = '';
                 userInput.value = '';
+                await loadUserSessions();
             }
         } catch (error) {
             console.error('Error creating new session:', error);
         }
+    }
+
+    async function loadUserSessions() {
+        try {
+            const response = await fetch('/get_user_sessions');
+            const data = await response.json();
+            updateSessionsList(data.sessions);
+        } catch (error) {
+            console.error('Error loading user sessions:', error);
+        }
+    }
+
+    function updateSessionsList(sessions) {
+        chatSessionsList.innerHTML = '';
+        sessions.forEach(session => {
+            const sessionItem = document.createElement('li');
+            sessionItem.textContent = session.title;
+            sessionItem.classList.add('cursor-pointer', 'hover:bg-gray-200', 'p-2', 'rounded', 'truncate');
+            sessionItem.setAttribute('data-session-id', session.id);
+            sessionItem.addEventListener('click', () => switchChatSession(session.id));
+            chatSessionsList.appendChild(sessionItem);
+        });
     }
 
     async function generateSessionTitle(message) {
@@ -33,25 +57,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ message }),
+                body: JSON.stringify({ message, session_id: currentSessionId }),
             });
             const data = await response.json();
             if (data.title) {
-                addSessionToSidebar(currentSessionId, data.title);
+                await loadUserSessions();
             }
         } catch (error) {
             console.error('Error generating session title:', error);
         }
-    }
-
-    function addSessionToSidebar(sessionId, title) {
-        const sessionsList = document.getElementById('chat-sessions');
-        const sessionItem = document.createElement('li');
-        sessionItem.textContent = title;
-        sessionItem.classList.add('cursor-pointer', 'hover:bg-gray-200', 'p-2', 'rounded', 'truncate');
-        sessionItem.setAttribute('data-session-id', sessionId);
-        sessionItem.addEventListener('click', () => switchChatSession(sessionId));
-        sessionsList.appendChild(sessionItem);
     }
 
     async function switchChatSession(sessionId) {
@@ -97,8 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await response.json();
                 appendMessage('assistant', data.response, data.is_essay, true);
 
-                const sessionsList = document.getElementById('chat-sessions');
-                if (sessionsList.children.length === 0) {
+                if (chatSessionsList.children.length === 1) {
                     await generateSessionTitle(message);
                 }
             } catch (error) {
@@ -415,5 +428,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    createNewSession();
+    loadUserSessions().then(() => {
+        if (chatSessionsList.children.length > 0) {
+            const firstSessionId = chatSessionsList.children[0].getAttribute('data-session-id');
+            switchChatSession(firstSessionId);
+        } else {
+            createNewSession();
+        }
+    });
 });

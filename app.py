@@ -7,6 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from openai import OpenAI
 from sqlalchemy import or_
 import uuid
+from datetime import datetime
 
 logging.basicConfig(level=logging.INFO)
 
@@ -32,6 +33,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     password_hash = db.Column(db.String(120), nullable=False)
     notes = db.relationship('Note', backref='user', lazy=True)
+    chat_sessions = db.relationship('ChatSession', backref='user', lazy=True)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -44,6 +46,21 @@ class Note(db.Model):
     content = db.Column(db.Text, nullable=False)
     category = db.Column(db.String(50), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+class ChatSession(db.Model):
+    id = db.Column(db.String(36), primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    messages = db.relationship('ChatMessage', backref='chat_session', lazy=True, cascade='all, delete-orphan')
+
+class ChatMessage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    role = db.Column(db.String(20), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    is_essay = db.Column(db.Boolean, default=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    chat_session_id = db.Column(db.String(36), db.ForeignKey('chat_session.id'), nullable=False)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -74,16 +91,16 @@ def select_model():
 @login_required
 def new_session():
     session_id = str(uuid.uuid4())
-    if 'chat_sessions' not in flask_session:
-        flask_session['chat_sessions'] = []
-    flask_session['chat_sessions'].append(session_id)
-    flask_session['current_session'] = session_id
+    new_chat_session = ChatSession(id=session_id, title="New Chat", user_id=current_user.id)
+    db.session.add(new_chat_session)
+    db.session.commit()
     return jsonify({"session_id": session_id})
 
 @app.route('/generate_title', methods=['POST'])
 @login_required
 def generate_title():
     user_message = request.json['message']
+    session_id = request.json['session_id']
     selected_model = flask_session.get('selected_model', 'gpt-4o')
     
     try:
@@ -96,6 +113,12 @@ def generate_title():
             max_tokens=20
         )
         title = completion.choices[0].message.content.strip()
+        
+        chat_session = ChatSession.query.get(session_id)
+        if chat_session:
+            chat_session.title = title
+            db.session.commit()
+        
         return jsonify({"title": title})
     except Exception as e:
         app.logger.error(f"Error generating title: {str(e)}")
@@ -105,9 +128,10 @@ def generate_title():
 @login_required
 def chat():
     user_message = request.json['message']
-    session_id = flask_session.get('current_session')
-    if not session_id:
-        return jsonify({"error": "No active session"}), 400
+    session_id = request.json['session_id']
+    chat_session = ChatSession.query.get(session_id)
+    if not chat_session:
+        return jsonify({"error": "Invalid session"}), 400
 
     selected_model = flask_session.get('selected_model', 'gpt-4o')
     
@@ -130,20 +154,11 @@ def chat():
         if not ai_response:
             raise ValueError("OpenAI returned an empty response.")
         
-        if 'chat_history' not in flask_session:
-            flask_session['chat_history'] = {}
-        if session_id not in flask_session['chat_history']:
-            flask_session['chat_history'][session_id] = []
-        
-        flask_session['chat_history'][session_id].append({
-            "role": "user",
-            "content": user_message
-        })
-        flask_session['chat_history'][session_id].append({
-            "role": "assistant",
-            "content": ai_response,
-            "is_essay": False
-        })
+        user_message_db = ChatMessage(role="user", content=user_message, chat_session_id=session_id)
+        ai_message_db = ChatMessage(role="assistant", content=ai_response, chat_session_id=session_id)
+        db.session.add(user_message_db)
+        db.session.add(ai_message_db)
+        db.session.commit()
         
         return jsonify({"response": ai_response, "is_essay": False})
     except Exception as e:
@@ -154,6 +169,7 @@ def chat():
 @login_required
 def generate_essay():
     note_ids = request.json.get('note_ids', [])
+    session_id = request.json['session_id']
     selected_notes = Note.query.filter(Note.id.in_(note_ids), Note.user_id == current_user.id).all()
     
     if not selected_notes:
@@ -177,17 +193,9 @@ def generate_essay():
         if not essay:
             raise ValueError("OpenAI returned an empty response.")
         
-        session_id = flask_session.get('current_session')
-        if 'chat_history' not in flask_session:
-            flask_session['chat_history'] = {}
-        if session_id not in flask_session['chat_history']:
-            flask_session['chat_history'][session_id] = []
-        
-        flask_session['chat_history'][session_id].append({
-            "role": "assistant",
-            "content": essay,
-            "is_essay": True
-        })
+        essay_message = ChatMessage(role="assistant", content=essay, is_essay=True, chat_session_id=session_id)
+        db.session.add(essay_message)
+        db.session.commit()
         
         return jsonify({"success": True, "essay": essay})
     except Exception as e:
@@ -197,9 +205,32 @@ def generate_essay():
 @app.route('/get_session_messages/<session_id>', methods=['GET'])
 @login_required
 def get_session_messages(session_id):
-    chat_history = flask_session.get('chat_history', {})
-    session_messages = chat_history.get(session_id, [])
-    return jsonify({"messages": session_messages})
+    chat_session = ChatSession.query.get(session_id)
+    if not chat_session or chat_session.user_id != current_user.id:
+        return jsonify({"error": "Invalid session"}), 400
+    
+    messages = [
+        {
+            "role": message.role,
+            "content": message.content,
+            "is_essay": message.is_essay
+        } for message in chat_session.messages
+    ]
+    return jsonify({"messages": messages})
+
+@app.route('/get_user_sessions', methods=['GET'])
+@login_required
+def get_user_sessions():
+    sessions = ChatSession.query.filter_by(user_id=current_user.id).order_by(ChatSession.created_at.desc()).all()
+    return jsonify({
+        "sessions": [
+            {
+                "id": session.id,
+                "title": session.title,
+                "created_at": session.created_at.isoformat()
+            } for session in sessions
+        ]
+    })
 
 @app.route('/save_note', methods=['POST'])
 @login_required
