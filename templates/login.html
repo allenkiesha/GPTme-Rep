@@ -10,13 +10,13 @@
     <div class="container mx-auto p-4">
         <h1 class="text-3xl font-bold mb-6">Login</h1>
         <form method="POST" action="{{ url_for('login') }}" class="bg-white rounded-lg shadow-md p-6">
-            {% with messages = get_flashed_messages() %}
+            {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
-                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                        {% for message in messages %}
+                    {% for category, message in messages %}
+                        <div class="bg-{{ 'green' if category == 'success' else 'red' }}-100 border border-{{ 'green' if category == 'success' else 'red' }}-400 text-{{ 'green' if category == 'success' else 'red' }}-700 px-4 py-3 rounded relative mb-4" role="alert">
                             <p>{{ message }}</p>
-                        {% endfor %}
-                    </div>
+                        </div>
+                    {% endfor %}
                 {% endif %}
             {% endwith %}
             <div class="mb-4">

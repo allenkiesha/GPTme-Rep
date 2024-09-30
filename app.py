@@ -5,7 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from openai import OpenAI
-from urllib.parse import urlparse, urljoin
+from urllib.parse import urlparse
 
 logging.basicConfig(level=logging.INFO)
 
@@ -90,13 +90,15 @@ def get_notes():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('chat_page'))
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
         
         user = User.query.filter_by(username=username).first()
         if user:
-            flash('Username already exists')
+            flash('Username already exists', 'error')
             return redirect(url_for('register'))
         
         new_user = User(username=username)
@@ -105,13 +107,15 @@ def register():
         db.session.commit()
         
         app.logger.info(f'New user registered: {username}')
-        flash('Registration successful. Please log in.')
+        flash('Registration successful. Please log in.', 'success')
         return redirect(url_for('login'))
     
     return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('chat_page'))
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
@@ -123,9 +127,10 @@ def login():
             if not next_page or urlparse(next_page).netloc != '':
                 next_page = url_for('chat_page')
             app.logger.info(f'User {username} logged in successfully')
+            flash('Logged in successfully.', 'success')
             return redirect(next_page)
         else:
-            flash('Invalid username or password')
+            flash('Invalid username or password', 'error')
             app.logger.warning(f'Failed login attempt for username: {username}')
     
     return render_template('login.html')
