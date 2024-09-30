@@ -171,7 +171,7 @@ def save_note():
     new_note = Note(content=note_content, category=category, user_id=current_user.id, order=highest_order + 1)
     db.session.add(new_note)
     db.session.commit()
-    return jsonify({"success": True, "notes": [{"id": note.id, "content": note.content, "category": note.category, "order": note.order} for note in current_user.notes]})
+    return jsonify({"success": True, "note": {"id": new_note.id, "content": new_note.content, "category": new_note.category, "order": new_note.order}})
 
 @app.route('/get_notes', methods=['GET'])
 @login_required

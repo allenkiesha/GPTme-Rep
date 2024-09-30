@@ -178,9 +178,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const data = await response.json();
-            notes = data.notes;
-            updateNotesList();
-            updateCategoryFilter();
+            if (data.success) {
+                notes.push(data.note);
+                updateNotesList();
+                updateCategoryFilter();
+            } else {
+                console.error('Error saving note:', data.message);
+            }
         } catch (error) {
             console.error('Error saving note:', error);
         }
@@ -188,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateNotesList() {
         notesList.innerHTML = '';
-        notes.forEach((note, index) => {
+        notes.forEach((note) => {
             const noteElement = document.createElement('div');
             noteElement.classList.add('mb-2', 'p-2', 'flex', 'justify-between', 'items-center', 'cursor-move');
             noteElement.setAttribute('draggable', 'true');
