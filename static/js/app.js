@@ -252,6 +252,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 selectedNotes.delete(noteId);
                 noteElement.classList.remove('selected');
             }
+
+            // Show/hide the 'Use Selected Notes' button based on selection
+            if (selectedNotes.size > 0) {
+                useSelectedNotesBtn.classList.remove('hidden');
+            } else {
+                useSelectedNotesBtn.classList.add('hidden');
+            }
         } catch (error) {
             console.error('Error toggling note selection:', error);
         }

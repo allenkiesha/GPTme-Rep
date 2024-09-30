@@ -351,3 +351,15 @@ label {
   background-color: #0A0A0A;
   outline: 1px solid #0A0A0A;
 }
+
+#use-selected-notes {
+    display: none;
+}
+
+#use-selected-notes.hidden {
+    display: none;
+}
+
+#use-selected-notes:not(.hidden) {
+    display: block;
+}
