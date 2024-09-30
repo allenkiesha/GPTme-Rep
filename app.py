@@ -49,6 +49,7 @@ def index():
 @app.route('/chat')
 @login_required
 def chat_page():
+    print(f"Debug: Accessed chat_page for user {current_user.username}")  # Add this line for debugging
     if not current_user.is_authenticated:
         app.logger.warning(f'Unauthenticated user tried to access chat page')
         return redirect(url_for('login'))
@@ -127,6 +128,7 @@ def login():
             login_user(user)
             app.logger.info(f'User {username} logged in successfully')
             flash('Logged in successfully.', 'success')
+            print(f"Debug: Redirecting to chat_page for user {username}")  # Add this line for debugging
             return redirect(url_for('chat_page'))
         else:
             flash('Invalid username or password', 'error')
