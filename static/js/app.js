@@ -361,7 +361,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ note_ids: Array.from(selectedNotes) }),
+                body: JSON.stringify({ 
+                    note_ids: Array.from(selectedNotes),
+                    session_id: currentSessionId
+                }),
             });
 
             if (!response.ok) {
