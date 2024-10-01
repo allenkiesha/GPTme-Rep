@@ -374,18 +374,20 @@ label {
 
 .note-content {
     padding: 0 0.5rem 0.5rem;
-    transition: max-height 0.3s ease, opacity 0.3s ease;
+    transition: max-height 0.3s ease, opacity 0.3s ease, height 0.3s ease;
 }
 
 .note-content.collapsed {
     max-height: 0;
+    height: 0;
     opacity: 0;
     overflow: hidden;
 }
 
 .note-content.expanded {
-    max-height: 500px;
+    height: auto;
     opacity: 1;
+    overflow: visible;
 }
 
 .note-select {
