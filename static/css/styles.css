@@ -95,8 +95,6 @@ body p, body .custom-dropdown, .user-message, .ai-message, .essay-message {
 
 .essay-message-content {
     transition: max-height 0.3s ease, opacity 0.3s ease;
-    overflow-y: auto;
-    max-height: 500px;
 }
 
 .essay-message-content.collapsed {
@@ -131,37 +129,6 @@ body p, body .custom-dropdown, .user-message, .ai-message, .essay-message {
 
 .essay-expand-btn:hover {
     background-color: #9D79FF;
-}
-
-.essay-floating-buttons {
-    position: absolute;
-    bottom: 1rem;
-    right: 1rem;
-    display: flex;
-    gap: 0.5rem;
-}
-
-.essay-floating-button {
-    background-color: #CFAEFE;
-    color: #0A0A0A;
-    border: none;
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.essay-floating-button:hover {
-    background-color: #9D79FF;
-}
-
-.essay-floating-button svg {
-    width: 1.5rem;
-    height: 1.5rem;
 }
 
 .essay-message h2 {
@@ -251,6 +218,7 @@ body p, body .custom-dropdown, .user-message, .ai-message, .essay-message {
     border-radius: 1.2rem;
     background-color: #1D1D1D;
     padding: 6px;
+    overflow: hidden;
     text-overflow: ellipsis;
     margin-bottom: 0.5rem;
     -webkit-mask-image: linear-gradient(to bottom, #1D1D1D 80%, transparent 100%);
@@ -259,8 +227,6 @@ body p, body .custom-dropdown, .user-message, .ai-message, .essay-message {
 
 #notes-list {
     background-color: #0F0F0F;
-    /*max-height: calc(100vh - 200px);
-    overflow-y: auto;*/
 }
 
 input[type="text"], select {
@@ -414,38 +380,20 @@ label {
 
 .note-content {
     padding: 0 0.5rem 0.5rem;
-    transition: max-height 0.3s ease, opacity 0.3s ease;
-    overflow-y: auto;
-    max-height: 200px;
+    transition: max-height 0.3s ease, opacity 0.3s ease, height 0.3s ease;
 }
 
 .note-content.collapsed {
     max-height: 0;
+    height: 0;
     opacity: 0;
     overflow: hidden;
 }
 
 .note-content.expanded {
+    height: auto;
     opacity: 1;
-    overflow-y: auto;
-    max-height: 300px;
-}
-
-.note-content::-webkit-scrollbar {
-    width: 8px;
-}
-
-.note-content::-webkit-scrollbar-track {
-    background: #1D1D1D;
-}
-
-.note-content::-webkit-scrollbar-thumb {
-    background: #CFAEFE;
-    border-radius: 4px;
-}
-
-.note-content::-webkit-scrollbar-thumb:hover {
-    background: #9D79FF;
+    overflow: visible;
 }
 
 .note-select {
