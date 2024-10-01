@@ -352,9 +352,21 @@ document.addEventListener('DOMContentLoaded', () => {
     function toggleNoteExpansion(noteElement) {
         const noteContent = noteElement.querySelector('.note-content');
         const notePreview = noteElement.querySelector('.note-preview');
+        
         noteContent.classList.toggle('collapsed');
         noteContent.classList.toggle('expanded');
         notePreview.style.display = noteContent.classList.contains('expanded') ? 'none' : 'block';
+        
+        if (noteContent.classList.contains('expanded')) {
+            noteElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            
+            const notesListRect = document.getElementById('notes-list').getBoundingClientRect();
+            const noteRect = noteElement.getBoundingClientRect();
+            const availableHeight = notesListRect.bottom - noteRect.top;
+            noteContent.style.maxHeight = `${availableHeight - 20}px`;
+        } else {
+            noteContent.style.maxHeight = null;
+        }
     }
 
     function toggleNoteSelection(noteId, isChecked) {
