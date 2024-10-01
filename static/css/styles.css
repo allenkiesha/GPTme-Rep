@@ -11,6 +11,10 @@ body {
     background-position: -19px -19px;
 }
 
+body.overlay-active {
+    overflow: hidden;
+}
+
 body p, body .custom-dropdown, .user-message, .ai-message, .essay-message {
     font-size: 14px;
     font-family: "Work Sans", system-ui;
@@ -464,27 +468,34 @@ label {
 }
 
 .note-view-overlay {
-    position: absolute;
-    bottom: 0;
+    position: fixed;
+    top: 0;
     left: 0;
     right: 0;
-    height: calc(100% - 200px);
-    background-color: #1D1D1D;
-    border-top: 2px solid #CFAEFE;
-    border-radius: 8px 8px 0 0;
-    box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease-in-out;
-    transform: translateY(100%);
+    bottom: 0;
+    background-color: rgba(29, 29, 29, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
     z-index: 1000;
-    overflow-y: auto;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 .note-view-overlay.active {
-    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
 }
 
 .note-view-content {
-    padding: 1rem;
+    background-color: #1D1D1D;
+    padding: 2rem;
+    border-radius: 8px;
+    max-width: 80%;
+    max-height: 80%;
+    overflow-y: auto;
+    position: relative;
     color: #e0e0e0;
 }
 
@@ -494,16 +505,14 @@ label {
 }
 
 #close-note-view {
-    position: sticky;
-    top: 0.5rem;
-    right: 0.5rem;
-    background-color: #1D1D1D;
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background-color: transparent;
     border: none;
     color: #CFAEFE;
     font-size: 1.5rem;
     cursor: pointer;
-    float: right;
-    z-index: 1001;
 }
 
 #notes-wrapper {

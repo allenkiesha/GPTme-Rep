@@ -323,29 +323,27 @@ document.addEventListener('DOMContentLoaded', () => {
         const note = notes.find(n => n.id == noteId);
         if (!note) return;
 
-        const notesWrapper = document.getElementById('notes-wrapper');
-        let overlay = document.querySelector('.note-view-overlay');
+        const overlay = document.createElement('div');
+        overlay.classList.add('note-view-overlay');
         
-        if (!overlay) {
-            overlay = document.createElement('div');
-            overlay.classList.add('note-view-overlay');
-            notesWrapper.appendChild(overlay);
-        }
-
         overlay.innerHTML = `
-            <button id="close-note-view">&times;</button>
             <div class="note-view-content">
+                <button id="close-note-view">&times;</button>
                 <h3>${note.category}</h3>
                 <div>${note.content}</div>
             </div>
         `;
+
+        document.body.appendChild(overlay);
+        document.body.classList.add('overlay-active');
 
         setTimeout(() => overlay.classList.add('active'), 10);
 
         document.getElementById('close-note-view').addEventListener('click', () => {
             overlay.classList.remove('active');
             setTimeout(() => {
-                overlay.remove();
+                document.body.removeChild(overlay);
+                document.body.classList.remove('overlay-active');
             }, 300);
         });
     }
