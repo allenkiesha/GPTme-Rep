@@ -168,7 +168,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isEssay) {
                 messageDiv.classList.add('essay-message');
                 content = `
-                    <div class="essay-message-content">${formatEssayContent(content)}</div>
+                    <div class="essay-message-header">
+                        <h2>${content.split('\n\n')[0]}</h2>
+                        <button class="essay-expand-btn">Expand</button>
+                    </div>
+                    <div class="essay-message-content collapsed">
+                        ${formatEssayContent(content)}
+                    </div>
                     <div class="essay-floating-buttons">
                         <button class="essay-floating-button save-essay-btn" title="Save Essay">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -205,19 +211,36 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isEssay) {
             const saveEssayBtn = messageDiv.querySelector('.save-essay-btn');
             const shareEssayBtn = messageDiv.querySelector('.share-essay-btn');
+            const expandBtn = messageDiv.querySelector('.essay-expand-btn');
 
             saveEssayBtn.addEventListener('click', () => saveEssay(content));
             shareEssayBtn.addEventListener('click', () => shareEssay(content));
+            expandBtn.addEventListener('click', () => toggleEssayExpansion(messageDiv));
         }
     }
 
     function formatEssayContent(content) {
         const paragraphs = content.split('\n\n');
-        let formattedContent = `<h2>${paragraphs[0]}</h2>`;
+        let formattedContent = '';
         for (let i = 1; i < paragraphs.length; i++) {
             formattedContent += `<p>${paragraphs[i]}</p>`;
         }
         return formattedContent;
+    }
+
+    function toggleEssayExpansion(essayDiv) {
+        const content = essayDiv.querySelector('.essay-message-content');
+        const expandBtn = essayDiv.querySelector('.essay-expand-btn');
+        
+        if (content.classList.contains('collapsed')) {
+            content.classList.remove('collapsed');
+            content.classList.add('expanded');
+            expandBtn.textContent = 'Collapse';
+        } else {
+            content.classList.remove('expanded');
+            content.classList.add('collapsed');
+            expandBtn.textContent = 'Expand';
+        }
     }
 
     function showSaveNoteModal(content, category = '') {
