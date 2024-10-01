@@ -324,26 +324,29 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!note) return;
 
         const notesWrapper = document.getElementById('notes-wrapper');
-        const existingOverlay = document.querySelector('.note-view-overlay');
+        let overlay = document.querySelector('.note-view-overlay');
         
-        if (existingOverlay) {
-            existingOverlay.remove();
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.classList.add('note-view-overlay');
+            notesWrapper.appendChild(overlay);
         }
 
-        const overlay = document.createElement('div');
-        overlay.classList.add('note-view-overlay');
         overlay.innerHTML = `
             <div class="note-view-content">
-                <h3 class="text-lg font-bold mb-2">${note.category}</h3>
-                <div class="mb-4 max-h-[calc(100%-4rem)] overflow-y-auto">${note.content}</div>
-                <button id="close-note-view" class="btn btn-primary">Close</button>
+                <h3>${note.category}</h3>
+                <div>${note.content}</div>
             </div>
+            <button id="close-note-view">&times;</button>
         `;
 
-        notesWrapper.appendChild(overlay);
+        setTimeout(() => overlay.classList.add('active'), 10);
 
         document.getElementById('close-note-view').addEventListener('click', () => {
-            overlay.remove();
+            overlay.classList.remove('active');
+            setTimeout(() => {
+                overlay.remove();
+            }, 300);
         });
     }
 
