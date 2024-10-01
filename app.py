@@ -91,10 +91,28 @@ def select_model():
 @login_required
 def new_session():
     session_id = str(uuid.uuid4())
-    new_chat_session = ChatSession(id=session_id, title="New Chat", user_id=current_user.id)
+    title = generate_session_title()
+    new_chat_session = ChatSession(id=session_id, title=title, user_id=current_user.id)
     db.session.add(new_chat_session)
     db.session.commit()
-    return jsonify({"session_id": session_id})
+    return jsonify({"session_id": session_id, "title": title})
+
+def generate_session_title():
+    selected_model = flask_session.get('selected_model', 'gpt-4o')
+    try:
+        completion = openai_client.chat.completions.create(
+            model=selected_model,
+            messages=[
+                {"role": "system", "content": "Generate a short, catchy title (max 5 words) for a new chat session."},
+                {"role": "user", "content": "Create a title for a new chat session"}
+            ],
+            max_tokens=20
+        )
+        title = completion.choices[0].message.content.strip()
+        return title
+    except Exception as e:
+        app.logger.error(f"Error generating title: {str(e)}")
+        return "New Chat"
 
 @app.route('/generate_title', methods=['POST'])
 @login_required

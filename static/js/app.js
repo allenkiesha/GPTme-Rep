@@ -17,15 +17,23 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch('/new_session', { method: 'POST' });
             const data = await response.json();
-            if (data.session_id) {
+            if (data.session_id && data.title) {
                 currentSessionId = data.session_id;
                 chatContainer.innerHTML = '';
                 userInput.value = '';
                 await loadUserSessions();
+                updateSessionTitle(data.title);
             }
         } catch (error) {
             console.error('Error creating new session:', error);
             displayErrorMessage('Failed to create a new session. Please try again.');
+        }
+    }
+
+    function updateSessionTitle(title) {
+        const sessionTitle = document.getElementById('current-session-title');
+        if (sessionTitle) {
+            sessionTitle.textContent = title;
         }
     }
 
@@ -68,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             console.log('Received title generation response:', data);
             if (data.title) {
+                updateSessionTitle(data.title);
                 await loadUserSessions();
             } else if (data.error) {
                 throw new Error(data.error);
@@ -94,6 +103,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             displaySessionMessages(data.messages);
             currentSessionId = sessionId;
+            const sessionItem = document.querySelector(`[data-session-id="${sessionId}"]`);
+            if (sessionItem) {
+                updateSessionTitle(sessionItem.textContent);
+            }
         } catch (error) {
             console.error('Error switching chat session:', error);
             displayErrorMessage('Failed to switch chat session. Please try again.');
@@ -132,9 +145,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await response.json();
                 appendMessage('assistant', data.response, data.is_essay, true);
 
-                if (chatSessionsList.children.length === 1) {
+                if (chatContainer.children.length === 2) {
                     await generateSessionTitle(message);
-                    console.log('Title generation triggered.');
                 }
             } catch (error) {
                 console.error('Error:', error);
