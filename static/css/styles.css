@@ -95,6 +95,8 @@ body p, body .custom-dropdown, .user-message, .ai-message, .essay-message {
 
 .essay-message-content {
     transition: max-height 0.3s ease, opacity 0.3s ease;
+    overflow-y: auto;
+    max-height: 500px;
 }
 
 .essay-message-content.collapsed {
@@ -426,6 +428,7 @@ label {
 
 .note-content.expanded {
     opacity: 1;
+    max-height: 500px;
 }
 
 .note-select {
