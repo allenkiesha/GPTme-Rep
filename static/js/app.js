@@ -314,6 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.view-note-btn').forEach(button => {
             button.addEventListener('click', (e) => {
                 const noteId = e.target.getAttribute('data-note-id');
+                console.log(`View button clicked for note id: ${noteId}`);
                 viewNote(noteId);
             });
         });
@@ -321,7 +322,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function viewNote(noteId) {
         const note = notes.find(n => n.id == noteId);
-        if (!note) return;
+        if (!note) {
+            console.error(`Note with id ${noteId} not found`);
+            return;
+        }
 
         const noteViewSidebar = document.getElementById('note-view-sidebar');
         const noteViewContent = document.getElementById('note-view-content');
@@ -332,11 +336,13 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
 
         noteViewSidebar.classList.add('active');
+        console.log('Note view sidebar activated');
     }
 
     document.getElementById('close-note-view').addEventListener('click', () => {
         const noteViewSidebar = document.getElementById('note-view-sidebar');
         noteViewSidebar.classList.remove('active');
+        console.log('Note view sidebar deactivated');
     });
 
     function toggleNoteSelection(noteId, isChecked) {
