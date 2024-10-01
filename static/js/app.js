@@ -323,30 +323,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const note = notes.find(n => n.id == noteId);
         if (!note) return;
 
-        const overlay = document.createElement('div');
-        overlay.classList.add('note-view-overlay');
+        const noteViewSidebar = document.getElementById('note-view-sidebar');
+        const noteViewContent = document.getElementById('note-view-content');
         
-        overlay.innerHTML = `
-            <div class="note-view-content">
-                <button id="close-note-view">&times;</button>
-                <h3>${note.category}</h3>
-                <div>${note.content}</div>
-            </div>
+        noteViewContent.innerHTML = `
+            <h3>${note.category}</h3>
+            <div>${note.content}</div>
         `;
 
-        document.body.appendChild(overlay);
-        document.body.classList.add('overlay-active');
-
-        setTimeout(() => overlay.classList.add('active'), 10);
-
-        document.getElementById('close-note-view').addEventListener('click', () => {
-            overlay.classList.remove('active');
-            setTimeout(() => {
-                document.body.removeChild(overlay);
-                document.body.classList.remove('overlay-active');
-            }, 300);
-        });
+        noteViewSidebar.classList.add('active');
     }
+
+    document.getElementById('close-note-view').addEventListener('click', () => {
+        const noteViewSidebar = document.getElementById('note-view-sidebar');
+        noteViewSidebar.classList.remove('active');
+    });
 
     function toggleNoteSelection(noteId, isChecked) {
         try {
