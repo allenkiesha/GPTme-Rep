@@ -365,6 +365,19 @@ label {
     cursor: pointer;
 }
 
+.note-preview {
+    color: #CBCBCB;
+    font-size: 0.9rem;
+    line-height: 1.2;
+    max-height: 3.6em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    margin-top: 0.25rem;
+}
+
 .note-content {
     padding: 0 0.5rem 0.5rem;
     transition: max-height 0.3s ease, opacity 0.3s ease, height 0.3s ease;

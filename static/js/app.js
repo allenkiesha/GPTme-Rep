@@ -312,6 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </svg>
                     </button>
                 </div>
+                <div class="note-preview">${getPreviewText(note.content)}</div>
                 <div class="note-content collapsed">
                     <p>${note.content}</p>
                 </div>
@@ -340,10 +341,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function getPreviewText(content) {
+        const maxLength = 100;
+        if (content.length <= maxLength) {
+            return content;
+        }
+        return content.substr(0, content.lastIndexOf(' ', maxLength)) + '...';
+    }
+
     function toggleNoteExpansion(noteElement) {
         const noteContent = noteElement.querySelector('.note-content');
+        const notePreview = noteElement.querySelector('.note-preview');
         noteContent.classList.toggle('collapsed');
         noteContent.classList.toggle('expanded');
+        notePreview.style.display = noteContent.classList.contains('expanded') ? 'none' : 'block';
     }
 
     function toggleNoteSelection(noteId, isChecked) {
