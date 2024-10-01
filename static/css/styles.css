@@ -251,7 +251,6 @@ body p, body .custom-dropdown, .user-message, .ai-message, .essay-message {
     border-radius: 1.2rem;
     background-color: #1D1D1D;
     padding: 6px;
-    overflow: hidden;
     text-overflow: ellipsis;
     margin-bottom: 0.5rem;
     -webkit-mask-image: linear-gradient(to bottom, #1D1D1D 80%, transparent 100%);
@@ -260,8 +259,8 @@ body p, body .custom-dropdown, .user-message, .ai-message, .essay-message {
 
 #notes-list {
     background-color: #0F0F0F;
-    max-height: calc(100vh - 200px);
-    overflow-y: auto;
+    /*max-height: calc(100vh - 200px);
+    overflow-y: auto;*/
 }
 
 input[type="text"], select {

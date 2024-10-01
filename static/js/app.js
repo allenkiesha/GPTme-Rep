@@ -314,7 +314,9 @@ document.addEventListener('DOMContentLoaded', () => {
             notesList.appendChild(noteElement);
 
             noteElement.querySelector('.note-header').addEventListener('click', (e) => {
+                console.log('Note header clicked:', e.target);
                 if (!e.target.classList.contains('note-select') && !e.target.classList.contains('delete-note-btn')) {
+                    console.log('Toggling note expansion');
                     toggleNoteExpansion(noteElement);
                 }
             });
@@ -344,12 +346,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function toggleNoteExpansion(noteElement) {
+        console.log('toggleNoteExpansion called for:', noteElement);
         const noteContent = noteElement.querySelector('.note-content');
         const notePreview = noteElement.querySelector('.note-preview');
+        
+        console.log('Before toggle - collapsed:', noteContent.classList.contains('collapsed'));
+        console.log('Before toggle - expanded:', noteContent.classList.contains('expanded'));
         
         noteContent.classList.toggle('collapsed');
         noteContent.classList.toggle('expanded');
         notePreview.style.display = noteContent.classList.contains('expanded') ? 'none' : 'block';
+        
+        console.log('After toggle - collapsed:', noteContent.classList.contains('collapsed'));
+        console.log('After toggle - expanded:', noteContent.classList.contains('expanded'));
     }
 
     function toggleNoteSelection(noteId, isChecked) {
