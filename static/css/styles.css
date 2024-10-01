@@ -218,11 +218,8 @@ body p, body .custom-dropdown, .user-message, .ai-message, .essay-message {
     border-radius: 1.2rem;
     background-color: #1D1D1D;
     padding: 6px;
-    overflow: hidden;
     text-overflow: ellipsis;
     margin-bottom: 0.5rem;
-    -webkit-mask-image: linear-gradient(to bottom, #1D1D1D 80%, transparent 100%);
-    mask-image: linear-gradient(to bottom, #1D1D1D 80%, transparent 100%);
 }
 
 #notes-list {

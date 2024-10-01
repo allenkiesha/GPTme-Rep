@@ -243,12 +243,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function showSaveNoteModal(content, category = '') {
+    function showSaveNoteModal(content, category = '', isEssay = false) {
         const modal = document.createElement('div');
         modal.classList.add('fixed', 'inset-0', 'bg-gray-600', 'bg-opacity-50', 'overflow-y-auto', 'h-full', 'w-full');
         modal.innerHTML = `
             <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-                <h3 class="text-lg font-bold mb-4">Save Note</h3>
+                <h3 class="text-lg font-bold mb-4">Save ${isEssay ? 'Essay' : 'Note'}</h3>
                 <textarea id="note-content" class="w-full p-2 border rounded mb-4" rows="4">${content}</textarea>
                 <input type="text" id="note-category" class="w-full p-2 border rounded mb-4" placeholder="Category" value="${category}">
                 <div class="flex justify-end">
@@ -267,19 +267,19 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('confirm-save').addEventListener('click', () => {
             const noteContent = document.getElementById('note-content').value;
             const noteCategory = document.getElementById('note-category').value || 'Uncategorized';
-            saveNote(noteContent, noteCategory);
+            saveNote(noteContent, noteCategory, isEssay);
             document.body.removeChild(modal);
         });
     }
 
-    async function saveNote(content, category) {
+    async function saveNote(content, category, isEssay = false) {
         try {
             const response = await fetch('/save_note', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ note: content, category: category }),
+                body: JSON.stringify({ note: content, category: category, is_essay: isEssay }),
             });
 
             if (!response.ok) {
@@ -460,6 +460,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             if (data.success) {
                 appendMessage('assistant', data.essay, true, true);
+                // Automatically save the generated essay as a note
+                saveEssay(data.essay);
             } else {
                 throw new Error(data.message);
             }
@@ -470,7 +472,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function saveEssay(content) {
-        showSaveNoteModal(content, 'Essay');
+        showSaveNoteModal(content, 'Essay', true);
     }
 
     function shareEssay(content) {
