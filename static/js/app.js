@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let notes = [];
     let currentSessionId = null;
     let selectedNotes = new Set();
+    let isNewSession = false;
 
     async function createNewSession() {
         try {
@@ -23,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 userInput.value = '';
                 await loadUserSessions();
                 updateSessionTitle(data.title);
+                isNewSession = true;
             }
         } catch (error) {
             console.error('Error creating new session:', error);
@@ -145,8 +147,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await response.json();
                 appendMessage('assistant', data.response, data.is_essay, true);
 
-                if (chatContainer.children.length === 2) {
+                if (isNewSession) {
                     await generateSessionTitle(message);
+                    isNewSession = false;
                 }
             } catch (error) {
                 console.error('Error:', error);
