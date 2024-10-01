@@ -314,7 +314,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.view-note-btn').forEach(button => {
             button.addEventListener('click', (e) => {
                 const noteId = e.target.getAttribute('data-note-id');
-                console.log(`View button clicked for note id: ${noteId}`);
                 viewNote(noteId);
             });
         });
@@ -322,28 +321,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function viewNote(noteId) {
         const note = notes.find(n => n.id == noteId);
-        if (!note) {
-            console.error(`Note with id ${noteId} not found`);
-            return;
-        }
+        if (!note) return;
 
-        const noteViewSidebar = document.getElementById('note-view-sidebar');
-        const noteViewContent = document.getElementById('note-view-content');
+        const overlay = document.createElement('div');
+        overlay.classList.add('note-view-overlay');
         
-        noteViewContent.innerHTML = `
-            <h3>${note.category}</h3>
-            <div>${note.content}</div>
+        overlay.innerHTML = `
+            <div class="note-view-content">
+                <button id="close-note-view">&times;</button>
+                <h3>${note.category}</h3>
+                <div>${note.content}</div>
+            </div>
         `;
 
-        noteViewSidebar.classList.add('active');
-        console.log('Note view sidebar activated');
-    }
+        document.body.appendChild(overlay);
+        document.body.classList.add('overlay-active');
 
-    document.getElementById('close-note-view').addEventListener('click', () => {
-        const noteViewSidebar = document.getElementById('note-view-sidebar');
-        noteViewSidebar.classList.remove('active');
-        console.log('Note view sidebar deactivated');
-    });
+        setTimeout(() => overlay.classList.add('active'), 10);
+
+        document.getElementById('close-note-view').addEventListener('click', () => {
+            overlay.classList.remove('active');
+            setTimeout(() => {
+                document.body.removeChild(overlay);
+                document.body.classList.remove('overlay-active');
+            }, 300);
+        });
+    }
 
     function toggleNoteSelection(noteId, isChecked) {
         try {
