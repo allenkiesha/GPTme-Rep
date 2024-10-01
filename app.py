@@ -46,6 +46,7 @@ class Note(db.Model):
     content = db.Column(db.Text, nullable=False)
     category = db.Column(db.String(50), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    is_essay = db.Column(db.Boolean, default=False)
 
 class ChatSession(db.Model):
     id = db.Column(db.String(36), primary_key=True)
@@ -249,15 +250,16 @@ def get_user_sessions():
 def save_note():
     note_content = request.json['note']
     category = request.json.get('category', 'Uncategorized')
-    new_note = Note(content=note_content, category=category, user_id=current_user.id)
+    is_essay = request.json.get('is_essay', False)
+    new_note = Note(content=note_content, category=category, user_id=current_user.id, is_essay=is_essay)
     db.session.add(new_note)
     db.session.commit()
-    return jsonify({"success": True, "notes": [{"id": note.id, "content": note.content, "category": note.category} for note in current_user.notes]})
+    return jsonify({"success": True, "notes": [{"id": note.id, "content": note.content, "category": note.category, "is_essay": note.is_essay} for note in current_user.notes]})
 
 @app.route('/get_notes', methods=['GET'])
 @login_required
 def get_notes():
-    return jsonify({"notes": [{"id": note.id, "content": note.content, "category": note.category} for note in current_user.notes]})
+    return jsonify({"notes": [{"id": note.id, "content": note.content, "category": note.category, "is_essay": note.is_essay} for note in current_user.notes]})
 
 @app.route('/search_notes', methods=['GET'])
 @login_required
@@ -274,7 +276,7 @@ def search_notes():
         notes_query = notes_query.filter(or_(Note.content.ilike(f'%{query}%'), Note.category.ilike(f'%{query}%')))
     
     notes = notes_query.all()
-    return jsonify({"notes": [{"id": note.id, "content": note.content, "category": note.category} for note in notes]})
+    return jsonify({"notes": [{"id": note.id, "content": note.content, "category": note.category, "is_essay": note.is_essay} for note in notes]})
 
 @app.route('/delete_note/<int:note_id>', methods=['DELETE'])
 @login_required
@@ -293,7 +295,7 @@ def get_selected_notes():
     selected_notes = Note.query.filter(Note.id.in_(note_ids), Note.user_id == current_user.id).all()
     return jsonify({
         "success": True,
-        "notes": [{"id": note.id, "content": note.content, "category": note.category} for note in selected_notes]
+        "notes": [{"id": note.id, "content": note.content, "category": note.category, "is_essay": note.is_essay} for note in selected_notes]
     })
 
 @app.route('/register', methods=['GET', 'POST'])

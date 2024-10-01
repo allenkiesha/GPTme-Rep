@@ -448,3 +448,27 @@ label {
 #use-selected-notes:not(.hidden) {
     display: block;
 }
+
+.note-item.essay-note {
+    border-left: 4px solid #CFAEFE;
+    background-color: #2D2D2D;
+}
+
+.note-item.essay-note .note-header {
+    background-color: #3D3D3D;
+}
+
+.note-item.essay-note .note-preview {
+    font-style: italic;
+}
+
+.note-item.essay-note::before {
+    content: 'Essay';
+    display: inline-block;
+    background-color: #CFAEFE;
+    color: #0A0A0A;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    margin-right: 8px;
+}
