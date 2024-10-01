@@ -131,6 +131,37 @@ body p, body .custom-dropdown, .user-message, .ai-message, .essay-message {
     background-color: #9D79FF;
 }
 
+.essay-floating-buttons {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.essay-floating-button {
+    background-color: #CFAEFE;
+    color: #0A0A0A;
+    border: none;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.essay-floating-button:hover {
+    background-color: #9D79FF;
+}
+
+.essay-floating-button svg {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
 .essay-message h2 {
     font-size: 24px;
     font-weight: 600;
