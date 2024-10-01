@@ -428,6 +428,25 @@ label {
 
 .note-content.expanded {
     opacity: 1;
+    overflow-y: auto;
+    max-height: 300px;
+}
+
+.note-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.note-content::-webkit-scrollbar-track {
+    background: #1D1D1D;
+}
+
+.note-content::-webkit-scrollbar-thumb {
+    background: #CFAEFE;
+    border-radius: 4px;
+}
+
+.note-content::-webkit-scrollbar-thumb:hover {
+    background: #9D79FF;
 }
 
 .note-select {
