@@ -280,20 +280,26 @@ document.addEventListener('DOMContentLoaded', () => {
             noteElement.classList.add('note-item');
             noteElement.setAttribute('data-note-id', note.id);
             noteElement.innerHTML = `
-                <input type="checkbox" class="note-select" data-note-id="${note.id}">
-                <div class="note-content">
+                <div class="note-header">
+                    <input type="checkbox" class="note-select" data-note-id="${note.id}">
                     <p class="font-bold">${note.category}</p>
-                    <p>${note.content}</p>
-                </div>
-                <div class="note-actions">
                     <button class="delete-note-btn btn" data-note-id="${note.id}">
                         <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true">
-                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-6"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-6"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
                         </svg>
                     </button>
                 </div>
+                <div class="note-content collapsed">
+                    <p>${note.content}</p>
+                </div>
             `;
             notesList.appendChild(noteElement);
+
+            noteElement.querySelector('.note-header').addEventListener('click', (e) => {
+                if (!e.target.classList.contains('note-select') && !e.target.classList.contains('delete-note-btn')) {
+                    toggleNoteExpansion(noteElement);
+                }
+            });
         });
 
         document.querySelectorAll('.note-select').forEach(selectButton => {
@@ -309,6 +315,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 await deleteNote(noteId);
             });
         });
+    }
+
+    function toggleNoteExpansion(noteElement) {
+        const noteContent = noteElement.querySelector('.note-content');
+        noteContent.classList.toggle('collapsed');
+        noteContent.classList.toggle('expanded');
     }
 
     function toggleNoteSelection(noteId, isChecked) {

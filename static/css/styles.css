@@ -358,18 +358,34 @@ label {
 
 .note-item {
     width: 98%;
-    display: flex;
-    align-items: flex-start;
-    padding: 0.5rem;
-    margin-bottom: 0.5rem;
     background-color: #1D1D1D;
     border-radius: 0.25rem;
-    transition: background-color 0.3s ease;
+    margin-bottom: 0.5rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
 }
 
-.note-item.selected {
-    background-color: #2D2D2D;
-    border: 1px solid #CFAEFE;
+.note-header {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem;
+    cursor: pointer;
+}
+
+.note-content {
+    padding: 0 0.5rem 0.5rem;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+}
+
+.note-content.collapsed {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+}
+
+.note-content.expanded {
+    max-height: 500px;
+    opacity: 1;
 }
 
 .note-select {
@@ -378,7 +394,7 @@ label {
     height: 1.25rem;
     border: 2px solid #CFAEFE;
     border-radius: 0.25rem;
-    margin: 0.75rem;
+    margin-right: 0.5rem;
     cursor: pointer;
     flex-shrink: 0;
     transition: background-color 0.3s ease;
@@ -392,18 +408,11 @@ label {
     background-position: center;
 }
 
-.note-content {
-    width: 100%;
-    height: 260px;
-    flex-grow: 1;
-    overflow: hidden;
+.delete-note-btn {
+    margin-left: auto;
 }
 
-.note-actions {
-    display: flex;
-}
-
-.delete-note-btn svg{
+.delete-note-btn svg {
     width: 24px;
     height: 24px;
     color: #C4C4C4;
