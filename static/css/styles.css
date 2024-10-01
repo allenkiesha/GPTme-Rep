@@ -417,7 +417,7 @@ label {
     padding: 0 0.5rem 0.5rem;
     transition: max-height 0.3s ease, opacity 0.3s ease;
     overflow-y: auto;
-    max-height: 300px;
+    max-height: 200px;
 }
 
 .note-content.collapsed {
@@ -428,7 +428,6 @@ label {
 
 .note-content.expanded {
     opacity: 1;
-    max-height: 500px;
 }
 
 .note-select {

@@ -232,15 +232,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const content = essayDiv.querySelector('.essay-message-content');
         const expandBtn = essayDiv.querySelector('.essay-expand-btn');
         
-        if (content.classList.contains('collapsed')) {
-            content.classList.remove('collapsed');
-            content.classList.add('expanded');
-            expandBtn.textContent = 'Collapse';
-        } else {
-            content.classList.remove('expanded');
-            content.classList.add('collapsed');
-            expandBtn.textContent = 'Expand';
-        }
+        content.classList.toggle('collapsed');
+        content.classList.toggle('expanded');
+        expandBtn.textContent = content.classList.contains('expanded') ? 'Collapse' : 'Expand';
     }
 
     function showSaveNoteModal(content, category = '') {
@@ -356,17 +350,6 @@ document.addEventListener('DOMContentLoaded', () => {
         noteContent.classList.toggle('collapsed');
         noteContent.classList.toggle('expanded');
         notePreview.style.display = noteContent.classList.contains('expanded') ? 'none' : 'block';
-        
-        if (noteContent.classList.contains('expanded')) {
-            noteElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            
-            const notesListRect = document.getElementById('notes-list').getBoundingClientRect();
-            const noteRect = noteElement.getBoundingClientRect();
-            const availableHeight = notesListRect.bottom - noteRect.top;
-            noteContent.style.maxHeight = `${availableHeight - 20}px`;
-        } else {
-            noteContent.style.maxHeight = null;
-        }
     }
 
     function toggleNoteSelection(noteId, isChecked) {
