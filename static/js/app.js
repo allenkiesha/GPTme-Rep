@@ -283,13 +283,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 <input type="checkbox" class="note-select" data-note-id="${note.id}">
                 <div class="note-content">
                     <p class="font-bold">${note.category}</p>
-                    <p class="note-preview">${note.content.substring(0, 50)}${note.content.length > 50 ? '...' : ''}</p>
+                    <p>${note.content}</p>
                 </div>
                 <div class="note-actions">
-                    <button class="view-note-btn btn" data-note-id="${note.id}">View</button>
                     <button class="delete-note-btn btn" data-note-id="${note.id}">
                         <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-6"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
+                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-6"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
                         </svg>
                     </button>
                 </div>
@@ -309,42 +308,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const noteId = e.target.closest('.delete-note-btn').getAttribute('data-note-id');
                 await deleteNote(noteId);
             });
-        });
-
-        document.querySelectorAll('.view-note-btn').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const noteId = e.target.getAttribute('data-note-id');
-                viewNote(noteId);
-            });
-        });
-    }
-
-    function viewNote(noteId) {
-        const note = notes.find(n => n.id == noteId);
-        if (!note) return;
-
-        const overlay = document.createElement('div');
-        overlay.classList.add('note-view-overlay');
-        
-        overlay.innerHTML = `
-            <div class="note-view-content">
-                <button id="close-note-view">&times;</button>
-                <h3>${note.category}</h3>
-                <div>${note.content}</div>
-            </div>
-        `;
-
-        document.body.appendChild(overlay);
-        document.body.classList.add('overlay-active');
-
-        setTimeout(() => overlay.classList.add('active'), 10);
-
-        document.getElementById('close-note-view').addEventListener('click', () => {
-            overlay.classList.remove('active');
-            setTimeout(() => {
-                document.body.removeChild(overlay);
-                document.body.classList.remove('overlay-active');
-            }, 300);
         });
     }
 
