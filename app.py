@@ -8,6 +8,7 @@ from openai import OpenAI
 from sqlalchemy import or_
 import uuid
 from datetime import datetime
+from flask_migrate import Migrate
 
 logging.basicConfig(level=logging.INFO)
 
@@ -17,6 +18,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
