@@ -468,6 +468,7 @@ label {
     bottom: 0;
     left: 0;
     right: 0;
+    height: calc(100% - 200px);
     background-color: #1D1D1D;
     border-top: 2px solid #CFAEFE;
     border-radius: 8px 8px 0 0;
@@ -475,6 +476,7 @@ label {
     transition: transform 0.3s ease-in-out;
     transform: translateY(100%);
     z-index: 1000;
+    overflow-y: auto;
 }
 
 .note-view-overlay.active {
@@ -483,8 +485,6 @@ label {
 
 .note-view-content {
     padding: 1rem;
-    max-height: 60vh;
-    overflow-y: auto;
     color: #e0e0e0;
 }
 
@@ -494,14 +494,16 @@ label {
 }
 
 #close-note-view {
-    position: absolute;
+    position: sticky;
     top: 0.5rem;
     right: 0.5rem;
-    background-color: transparent;
+    background-color: #1D1D1D;
     border: none;
     color: #CFAEFE;
     font-size: 1.5rem;
     cursor: pointer;
+    float: right;
+    z-index: 1001;
 }
 
 #notes-wrapper {

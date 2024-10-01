@@ -333,11 +333,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         overlay.innerHTML = `
+            <button id="close-note-view">&times;</button>
             <div class="note-view-content">
                 <h3>${note.category}</h3>
                 <div>${note.content}</div>
             </div>
-            <button id="close-note-view">&times;</button>
         `;
 
         setTimeout(() => overlay.classList.add('active'), 10);
