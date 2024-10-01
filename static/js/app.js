@@ -323,22 +323,27 @@ document.addEventListener('DOMContentLoaded', () => {
         const note = notes.find(n => n.id == noteId);
         if (!note) return;
 
-        const modal = document.createElement('div');
-        modal.classList.add('fixed', 'inset-0', 'bg-gray-600', 'bg-opacity-50', 'overflow-y-auto', 'h-full', 'w-full', 'flex', 'items-center', 'justify-center');
-        modal.innerHTML = `
-            <div class="relative p-5 border w-96 shadow-lg rounded-md bg-white">
-                <h3 class="text-lg font-bold mb-4">${note.category}</h3>
-                <div class="mb-4 max-h-96 overflow-y-auto">${note.content}</div>
-                <div class="flex justify-end">
-                    <button id="close-modal" class="btn btn-primary">Close</button>
-                </div>
+        const notesWrapper = document.getElementById('notes-wrapper');
+        const existingOverlay = document.querySelector('.note-view-overlay');
+        
+        if (existingOverlay) {
+            existingOverlay.remove();
+        }
+
+        const overlay = document.createElement('div');
+        overlay.classList.add('note-view-overlay');
+        overlay.innerHTML = `
+            <div class="note-view-content">
+                <h3 class="text-lg font-bold mb-2">${note.category}</h3>
+                <div class="mb-4 max-h-[calc(100%-4rem)] overflow-y-auto">${note.content}</div>
+                <button id="close-note-view" class="btn btn-primary">Close</button>
             </div>
         `;
 
-        document.body.appendChild(modal);
+        notesWrapper.appendChild(overlay);
 
-        document.getElementById('close-modal').addEventListener('click', () => {
-            document.body.removeChild(modal);
+        document.getElementById('close-note-view').addEventListener('click', () => {
+            overlay.remove();
         });
     }
 

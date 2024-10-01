@@ -462,3 +462,38 @@ label {
 #use-selected-notes:not(.hidden) {
     display: block;
 }
+
+.note-view-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.note-view-content {
+    background-color: #1D1D1D;
+    border-radius: 8px;
+    padding: 1rem;
+    width: 90%;
+    max-height: 90%;
+    overflow-y: auto;
+    color: #e0e0e0;
+}
+
+.note-view-content h3 {
+    color: #CFAEFE;
+}
+
+#close-note-view {
+    margin-top: 1rem;
+}
+
+#notes-wrapper {
+    position: relative;
+}
