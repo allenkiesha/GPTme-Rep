@@ -177,12 +177,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div class="essay-floating-buttons">
                         <button class="essay-floating-button save-essay-btn" title="Save Essay">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
                             </svg>
                         </button>
                         <button class="essay-floating-button share-essay-btn" title="Share Essay">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z" />
                             </svg>
                         </button>
@@ -243,12 +243,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function showSaveNoteModal(content, category = '', isEssay = false) {
+    function showSaveNoteModal(content, category = '') {
         const modal = document.createElement('div');
         modal.classList.add('fixed', 'inset-0', 'bg-gray-600', 'bg-opacity-50', 'overflow-y-auto', 'h-full', 'w-full');
         modal.innerHTML = `
             <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-                <h3 class="text-lg font-bold mb-4">Save ${isEssay ? 'Essay' : 'Note'}</h3>
+                <h3 class="text-lg font-bold mb-4">Save Note</h3>
                 <textarea id="note-content" class="w-full p-2 border rounded mb-4" rows="4">${content}</textarea>
                 <input type="text" id="note-category" class="w-full p-2 border rounded mb-4" placeholder="Category" value="${category}">
                 <div class="flex justify-end">
@@ -267,19 +267,19 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('confirm-save').addEventListener('click', () => {
             const noteContent = document.getElementById('note-content').value;
             const noteCategory = document.getElementById('note-category').value || 'Uncategorized';
-            saveNote(noteContent, noteCategory, isEssay);
+            saveNote(noteContent, noteCategory);
             document.body.removeChild(modal);
         });
     }
 
-    async function saveNote(content, category, isEssay = false) {
+    async function saveNote(content, category) {
         try {
             const response = await fetch('/save_note', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ note: content, category: category, is_essay: isEssay }),
+                body: JSON.stringify({ note: content, category: category }),
             });
 
             if (!response.ok) {
@@ -301,9 +301,6 @@ document.addEventListener('DOMContentLoaded', () => {
         notes.forEach((note) => {
             const noteElement = document.createElement('div');
             noteElement.classList.add('note-item');
-            if (note.is_essay) {
-                noteElement.classList.add('essay-note');
-            }
             noteElement.setAttribute('data-note-id', note.id);
             noteElement.innerHTML = `
                 <div class="note-header">
@@ -463,7 +460,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             if (data.success) {
                 appendMessage('assistant', data.essay, true, true);
-                saveEssay(data.essay);
             } else {
                 throw new Error(data.message);
             }
@@ -474,7 +470,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function saveEssay(content) {
-        showSaveNoteModal(content, 'Essay', true);
+        showSaveNoteModal(content, 'Essay');
     }
 
     function shareEssay(content) {
